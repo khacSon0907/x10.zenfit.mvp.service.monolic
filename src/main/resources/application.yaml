@@ -1,0 +1,94 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  config:
+    import: optional:file:.env[.properties]
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  application:
+    name: clothing-store-api
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+
+    redis:
+      url: ${REDIS_URL}
+      repositories:
+        enabled: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - email
+              - profile
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}
+  refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
+
+oauth2:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+
+app:
+  mail:
+    from: ${MAIL_FROM}
+  openai:
+    enabled: ${OPENAI_ENABLED:true}
+    api-key: ${OPENAI_API_KEY:}
+    model: ${OPENAI_MODEL:gpt-5.1}
+    responses-url: ${OPENAI_RESPONSES_URL:https://api.openai.com/v1/responses}
+    max-output-tokens: ${OPENAI_MAX_OUTPUT_TOKENS:700}
+  location:
+    base-url: ${LOCATION_API_URL}
+  order:
+    auto-status:
+      enabled: ${ORDER_AUTO_STATUS_ENABLED:true}
+      initial-delay-ms: ${ORDER_AUTO_STATUS_INITIAL_DELAY_MS:60000}
+      fixed-delay-ms: ${ORDER_AUTO_STATUS_FIXED_DELAY_MS:300000}
+      confirmed-to-packing-minutes: ${ORDER_CONFIRMED_TO_PACKING_MINUTES:5}
+      packing-to-shipping-minutes: ${ORDER_PACKING_TO_SHIPPING_MINUTES:1440}
+      shipping-to-completed-minutes: ${ORDER_SHIPPING_TO_COMPLETED_MINUTES:4320}
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
+
+payos:
+  client-id: ${PAYOS_CLIENT_ID}
+  api-key: ${PAYOS_API_KEY}
+  checksum-key: ${PAYOS_CHECKSUM_KEY}
+  return-url: ${PAYOS_RETURN_URL}
+  cancel-url: ${PAYOS_CANCEL_URL}

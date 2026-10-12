@@ -1,0 +1,23 @@
+# Ignore Git and IDE configurations
+.git
+.gitignore
+.gitattributes
+.idea
+.vscode
+.mvn
+HELP.md
+ReadMe.md
+
+# Ignore build artifacts and caches
+target/
+*.class
+*.jar
+*.war
+*.rar
+*.tar
+*.zip
+
+# Ignore local environment variables and tools
+.env
+mvnw
+mvnw.cmd
