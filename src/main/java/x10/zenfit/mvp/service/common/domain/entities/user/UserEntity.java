@@ -45,11 +45,7 @@ public class UserEntity {
     private boolean emailVerified;
 
     private LocalDateTime verifiedAt;
-    /**
-     * Danh sách role của user
-     * VD: ["ADMIN"]
-     * VD: ["STAFF", "USER"]
-     */
+
     private List<String> roleIds;
 
     private Instant createdAt;
