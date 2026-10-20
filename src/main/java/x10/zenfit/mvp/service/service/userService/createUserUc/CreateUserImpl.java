@@ -17,6 +17,7 @@ import x10.zenfit.mvp.service.share.exception.user.UserError;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -45,6 +46,8 @@ public class CreateUserImpl implements ICreateUserUc {
                         .trim()
                         .toLowerCase();
 
+                String phone = normalizePhone(req.getPhone());
+
                 Optional<UserEntity> existedUser =
                         userRepository.findByEmail(email);
 
@@ -62,6 +65,8 @@ public class CreateUserImpl implements ICreateUserUc {
 
                                 user.setEmail(email);
 
+                                user.setPhoneNumber(phone);
+
                                 user.setPasswordHash(
                                         passwordEncoder.encode(req.getPassword()));
 
@@ -74,7 +79,7 @@ public class CreateUserImpl implements ICreateUserUc {
                                 if (user.getRoleIds() == null
                                         || user.getRoleIds().isEmpty()) {
 
-                                        user.setRoleIds(roleResolver.getDefaultRoleIds());
+                                        user.setRoleIds(resolveRoleIds(req.getRoleIds()));
                                 }
 
                                 user.setUpdatedAt(Instant.now());
@@ -97,6 +102,8 @@ public class CreateUserImpl implements ICreateUserUc {
                                 && !user.isEmailVerified()) {
 
                                 user.setUsername(req.getUsername());
+
+                                user.setPhoneNumber(phone);
 
                                 user.setPasswordHash(
                                         passwordEncoder.encode(req.getPassword()));
@@ -134,10 +141,20 @@ public class CreateUserImpl implements ICreateUserUc {
                                         user.setUsername(req.getUsername());
                                 }
 
+                                /*
+                                 * Optional:
+                                 * update phone nếu chưa có
+                                 */
+                                if (user.getPhoneNumber() == null
+                                        || user.getPhoneNumber().isBlank()) {
+
+                                        user.setPhoneNumber(phone);
+                                }
+
                                 if (user.getRoleIds() == null
                                         || user.getRoleIds().isEmpty()) {
 
-                                        user.setRoleIds(roleResolver.getDefaultRoleIds());
+                                        user.setRoleIds(resolveRoleIds(req.getRoleIds()));
                                 }
 
                                 user.setStatus(UserStatus.ACTIVE);
@@ -164,6 +181,7 @@ public class CreateUserImpl implements ICreateUserUc {
                 UserEntity newUser = UserEntity.builder()
                         .username(req.getUsername())
                         .email(email)
+                        .phoneNumber(phone)
                         .passwordHash(
                                 passwordEncoder.encode(req.getPassword()))
                         .providerType(AuthProvider.LOCAL)
@@ -171,7 +189,7 @@ public class CreateUserImpl implements ICreateUserUc {
                         .emailVerified(false)
                         .birthdayUpdateCount(0)
                         .points(0L)
-                        .roleIds(roleResolver.getDefaultRoleIds())
+                        .roleIds(resolveRoleIds(req.getRoleIds()))
                         .createdAt(Instant.now())
                         .updatedAt(Instant.now())
                         .build();
@@ -182,6 +200,45 @@ public class CreateUserImpl implements ICreateUserUc {
                 createOtpAndPublishEvent(savedUser);
 
                 return savedUser;
+        }
+
+        private List<String> resolveRoleIds(List<String> roleIds) {
+                if (roleIds == null || roleIds.isEmpty()) {
+                        return roleResolver.getDefaultRoleIds();
+                }
+
+                List<String> normalizedRoleIds = roleIds.stream()
+                        .map(String::trim)
+                        .filter(roleId -> !roleId.isEmpty())
+                        .distinct()
+                        .toList();
+
+                if (normalizedRoleIds.isEmpty()) {
+                        return roleResolver.getDefaultRoleIds();
+                }
+
+                return normalizedRoleIds;
+        }
+
+        /**
+         * Chuẩn hóa SĐT về dạng 0xxxxxxxxx:
+         * - bỏ khoảng trắng
+         * - đổi +84 thành 0
+         * Trả về null nếu không nhập (trường hợp SĐT không bắt buộc).
+         */
+        private String normalizePhone(String rawPhone) {
+
+                if (rawPhone == null || rawPhone.isBlank()) {
+                        return null;
+                }
+
+                String phone = rawPhone.replaceAll("\\s+", "");
+
+                if (phone.startsWith("+84")) {
+                        phone = "0" + phone.substring(3);
+                }
+
+                return phone;
         }
 
         private void createOtpAndPublishEvent(

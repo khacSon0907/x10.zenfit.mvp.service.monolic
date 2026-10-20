@@ -37,6 +37,7 @@ public class RegisterUcImpl implements IRegisterUc {
                 .id(createdUser.getId())
                 .username(createdUser.getUsername())
                 .email(createdUser.getEmail())
+                .roleIds(createdUser.getRoleIds())
                 .requiresOtp(requiresOtp)
                 .build();
     }

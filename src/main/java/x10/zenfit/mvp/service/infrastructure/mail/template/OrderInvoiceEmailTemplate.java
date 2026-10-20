@@ -30,19 +30,19 @@ public class OrderInvoiceEmailTemplate {
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>X10 Clothing - Xac nhan don hang</title>
+                    <title>Zenfit - Xác nhận đơn hàng</title>
                 </head>
-                <body style="margin:0; padding:0; background:#f4f6f8; font-family:Arial, Helvetica, sans-serif; color:#1f2937;">
+                <body style="margin:0; padding:0; background:#f4f6f8; font-family:'Segoe UI', Arial, sans-serif; color:#1f2937;">
                     <div style="max-width:680px; margin:0 auto; padding:24px 12px;">
-                        <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden;">
-                            <div style="background:#111827; padding:22px 28px;">
-                                <h1 style="margin:0; color:#ffffff; font-size:22px; line-height:1.35;">X10 Clothing</h1>
-                                <p style="margin:6px 0 0; color:#d1d5db; font-size:14px;">Xac nhan don hang</p>
+                        <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div style="background:linear-gradient(135deg, #059669 0%%, #047857 100%%); padding:22px 28px;">
+                                <h1 style="margin:0; color:#ffffff; font-size:22px; font-weight:800; line-height:1.35;">Zenfit</h1>
+                                <p style="margin:6px 0 0; color:#a7f3d0; font-size:14px;">Xác nhận đơn hàng &amp; Thanh toán</p>
                             </div>
 
                             <div style="padding:28px;">
-                                <p style="margin:0 0 14px; font-size:15px; line-height:1.6;">Xin chao <strong>%s</strong>,</p>
-                                <p style="margin:0 0 22px; font-size:15px; line-height:1.6;">X10 Clothing da nhan don hang cua ban. Thong tin chi tiet nhu ben duoi:</p>
+                                <p style="margin:0 0 14px; font-size:15px; line-height:1.6;">Xin chào <strong>%s</strong>,</p>
+                                <p style="margin:0 0 22px; font-size:15px; line-height:1.6;"><strong>Zenfit</strong> đã nhận được đơn hàng của bạn. Thông tin chi tiết như bên dưới:</p>
 
                                 <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%%; border-collapse:collapse; margin-bottom:22px; border:1px solid #e5e7eb;">
                                     <tbody>
@@ -50,15 +50,15 @@ public class OrderInvoiceEmailTemplate {
                                     </tbody>
                                 </table>
 
-                                <h2 style="margin:0 0 10px; font-size:16px; color:#111827;">San pham</h2>
+                                <h2 style="margin:0 0 10px; font-size:16px; color:#111827;">Sản phẩm</h2>
                                 <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%%; border-collapse:collapse; margin-bottom:22px; border:1px solid #e5e7eb;">
                                     <thead>
                                         <tr>
-                                            <th align="left" style="padding:12px; background:#f9fafb; border-bottom:1px solid #e5e7eb; font-size:13px;">San pham</th>
-                                            <th align="left" style="padding:12px; background:#f9fafb; border-bottom:1px solid #e5e7eb; font-size:13px;">Phan loai</th>
+                                            <th align="left" style="padding:12px; background:#f9fafb; border-bottom:1px solid #e5e7eb; font-size:13px;">Sản phẩm</th>
+                                            <th align="left" style="padding:12px; background:#f9fafb; border-bottom:1px solid #e5e7eb; font-size:13px;">Phân loại</th>
                                             <th align="center" style="padding:12px; background:#f9fafb; border-bottom:1px solid #e5e7eb; font-size:13px;">SL</th>
-                                            <th align="right" style="padding:12px; background:#f9fafb; border-bottom:1px solid #e5e7eb; font-size:13px;">Don gia</th>
-                                            <th align="right" style="padding:12px; background:#f9fafb; border-bottom:1px solid #e5e7eb; font-size:13px;">Thanh tien</th>
+                                            <th align="right" style="padding:12px; background:#f9fafb; border-bottom:1px solid #e5e7eb; font-size:13px;">Đơn giá</th>
+                                            <th align="right" style="padding:12px; background:#f9fafb; border-bottom:1px solid #e5e7eb; font-size:13px;">Thành tiền</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -72,7 +72,7 @@ public class OrderInvoiceEmailTemplate {
                                     </tbody>
                                 </table>
 
-                                <p style="margin:0; font-size:15px; line-height:1.6;">Cam on ban da mua hang tai <strong>X10 Clothing</strong>.</p>
+                                <p style="margin:0; font-size:15px; line-height:1.6;">Cảm ơn bạn đã tin tưởng và đồng hành cùng <strong>Zenfit</strong>.</p>
                             </div>
                         </div>
                     </div>

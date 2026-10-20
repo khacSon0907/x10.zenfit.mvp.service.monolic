@@ -32,6 +32,14 @@ public class SecurityConfig {
     @Value("${app.frontend-url:https://polo-man.vercel.app}")
     private String frontendUrl;
 
+    private static final String[] MANAGEMENT_ROLES = {
+            "ADMIN", "HEAD_OF_TRAINING", "TEAM_MANAGER", "STAFF"
+    };
+
+    private static final String[] ALL_USER_ROLES = {
+            "ADMIN", "HEAD_OF_TRAINING", "TEAM_MANAGER", "PT", "STAFF", "USER"
+    };
+
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler
@@ -134,17 +142,17 @@ public class SecurityConfig {
 
                         // Categories create/update/delete chỉ ADMIN
                         .requestMatchers(HttpMethod.POST, "/api/categories")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.PUT, "/api/categories/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.DELETE, "/api/categories/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
 
                         // Product admin read
                         .requestMatchers(HttpMethod.GET, "/api/products/admin/cursor")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/admin/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
 
                         // Products public read
                         .requestMatchers(HttpMethod.GET, "/api/products/**")
@@ -152,11 +160,11 @@ public class SecurityConfig {
 
                         // Products create/update/delete chỉ ADMIN
                         .requestMatchers(HttpMethod.POST, "/api/products")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.PUT, "/api/products/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.DELETE, "/api/products/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
 
                         // Banners public read
                         .requestMatchers(HttpMethod.GET, "/api/banners/**")
@@ -181,7 +189,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/chat/guest/**")
                         .permitAll()
                         .requestMatchers("/api/chat/support/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers("/api/chat/**")
                         .authenticated()
 
@@ -199,25 +207,25 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/orders/me/**")
                         .authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/orders/admin/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.GET, "/api/orders/*/delivery-note")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.GET, "/api/orders/user/**")
-                        .hasAnyRole("ADMIN", "STAFF", "USER")
+                        .hasAnyRole(ALL_USER_ROLES)
                         .requestMatchers(HttpMethod.GET, "/api/orders")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.PUT, "/api/orders/*/confirm")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.PUT, "/api/orders/*/cancel")
                         .authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/orders/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.DELETE, "/api/orders/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.GET, "/api/revenue/targets/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.GET, "/api/revenue/targets")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.POST, "/api/revenue/targets")
                         .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/revenue/targets/**")
@@ -231,37 +239,37 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/my-refunds")
                         .authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/refunds/admin/cursor")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.GET, "/api/refunds")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.POST, "/api/refunds/*/approve")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.POST, "/api/refunds/*/reject")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.POST, "/api/refunds/*/mark-refunded")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
 
                         // Banners create/update/delete chỉ ADMIN
                         .requestMatchers(HttpMethod.POST, "/api/banners")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.PUT, "/api/banners/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.DELETE, "/api/banners/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
 
                         .requestMatchers(HttpMethod.POST, "/api/promotion-banners")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.PUT, "/api/promotion-banners/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.DELETE, "/api/promotion-banners/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
 
                         .requestMatchers("/api/shipping-rules/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.GET, "/api/point-rules")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.GET, "/api/point-rules/**")
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.POST, "/api/point-rules")
                         .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/point-rules/**")
@@ -280,9 +288,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/users/me/update")
                         .authenticated()
 
-                        // Chỉ ADMIN xem toàn bộ user
+                        // Quản lý xem toàn bộ user
                         .requestMatchers(HttpMethod.GET, "/api/users/all")
-                        .hasRole("ADMIN")
+                        .hasAnyRole(MANAGEMENT_ROLES)
                         .requestMatchers(HttpMethod.PUT, "/api/users/*")
                         .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/users/*/lock")

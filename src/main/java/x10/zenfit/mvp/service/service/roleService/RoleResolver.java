@@ -11,7 +11,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RoleResolver {
 
-    private static final String DEFAULT_ROLE_CODE = "USER";
+    public static final String DEFAULT_ROLE_CODE = "PT";
 
     private final IRoleRepository roleRepository;
 
@@ -20,7 +20,7 @@ public class RoleResolver {
         return roleRepository.findByCode(DEFAULT_ROLE_CODE)
                 .map(RoleEntity::getId)
                 .map(List::of)
-                .orElseThrow(() -> new IllegalStateException("Default USER role is not initialized"));
+                .orElseThrow(() -> new IllegalStateException("Default PT role is not initialized"));
     }
 
     public List<String> resolveRoleCodes(List<String> roleIds) {

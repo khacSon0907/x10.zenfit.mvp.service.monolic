@@ -63,7 +63,7 @@ public class GoogleOauth2ServiceImpl implements GoogleOauth2Service {
             user.setUsername(generateUsernameFromEmail(user.getEmail()));
         }
 
-        // Nếu roles bị null/rỗng thì set USER
+        // Nếu roles bị null/rỗng thì set role mặc định (PT)
         if (user.getRoleIds() == null || user.getRoleIds().isEmpty()) {
             user.setRoleIds(roleResolver.getDefaultRoleIds());
         }

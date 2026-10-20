@@ -13,7 +13,7 @@ public class RoleEntity {
 
     private String id;
 
-    // ADMIN, STAFF, USER, MANAGER,...
+    // ADMIN, HEAD_OF_TRAINING, TEAM_MANAGER, PT
     private String code;
 
     // Tên hiển thị

@@ -116,7 +116,7 @@ public class RefreshTokenUcImpl implements IRefreshTokenUc {
                 .filter(role -> !role.isEmpty())
                 .toList();
 
-        return normalizedRoles.isEmpty() ? List.of("USER") : normalizedRoles;
+        return normalizedRoles.isEmpty() ? List.of(RoleResolver.DEFAULT_ROLE_CODE) : normalizedRoles;
     }
 
     private List<String> normalizeRoleIds(List<String> roleIds) {

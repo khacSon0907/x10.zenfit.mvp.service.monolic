@@ -1,3 +1,4 @@
+
 package x10.zenfit.mvp.service.config.role;
 
 import lombok.RequiredArgsConstructor;
@@ -23,25 +24,51 @@ public class RoleDataInitializer implements CommandLineRunner {
                 RoleEntity.builder()
                         .code("ADMIN")
                         .name("Admin")
-                        .description("System administrator role")
+                        .description(
+                                "Quản trị tài khoản, phân quyền và cấu hình hệ thống ZenFit"
+                        )
                         .active(true)
                         .build(),
+
                 RoleEntity.builder()
-                        .code("STAFF")
-                        .name("Staff")
-                        .description("Store staff role")
+                        .code("HEAD_OF_TRAINING")
+                        .name("Quản lý huấn luyện")
+                        .description(
+                                "Quản lý toàn bộ Team Manager, giám sát các đội ngũ PT và theo dõi báo cáo tổng hợp"
+                        )
                         .active(true)
                         .build(),
+
                 RoleEntity.builder()
-                        .code("USER")
-                        .name("User")
-                        .description("Default customer role")
+                        .code("TEAM_MANAGER")
+                        .name("Quản lý đội ngũ PT")
+                        .description(
+                                "Quản lý PT trong team, phân công công việc và theo dõi hiệu suất đội ngũ"
+                        )
+                        .active(true)
+                        .build(),
+
+                RoleEntity.builder()
+                        .code("PT")
+                        .name("Personal Trainer")
+                        .description(
+                                "Quản lý lịch làm việc, học viên được phân công và kết quả huấn luyện"
+                        )
                         .active(true)
                         .build()
         );
 
-        defaultRoles.stream()
-                .filter(role -> !roleRepository.existsByCode(role.getCode()))
-                .forEach(roleRepository::save);
+        defaultRoles.forEach(defaultRole ->
+                roleRepository.findByCode(defaultRole.getCode())
+                        .ifPresentOrElse(
+                                existing -> {
+                                    existing.setName(defaultRole.getName());
+                                    existing.setDescription(defaultRole.getDescription());
+                                    existing.setActive(true);
+                                    roleRepository.save(existing);
+                                },
+                                () -> roleRepository.save(defaultRole)
+                        )
+        );
     }
 }

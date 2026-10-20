@@ -31,7 +31,7 @@ public class SmtpEmailAdapter implements EmailPort {
     ) {
         sendHtmlEmail(
                 to,
-                "Your X10 Clothing verification code",
+                "[Zenfit] Mã xác thực đăng ký tài khoản",
                 RegisterOtpEmailTemplate.build(username, otp)
         );
     }
@@ -44,7 +44,7 @@ public class SmtpEmailAdapter implements EmailPort {
     ) {
         sendHtmlEmail(
                 to,
-                "Your X10 Clothing password reset code",
+                "[Zenfit] Mã xác thực đặt lại mật khẩu",
                 ForgotPasswordEmailTemplate.build(username, otp)
         );
     }
@@ -61,7 +61,7 @@ public class SmtpEmailAdapter implements EmailPort {
 
             helper.setFrom(mailFrom);
             helper.setTo(to);
-            helper.setSubject("X10 Clothing invoice - " + order.getOrderCode());
+            helper.setSubject("Zenfit invoice - " + order.getOrderCode());
             helper.setText(
                     OrderInvoiceEmailTemplate.build(username, order),
                     true
