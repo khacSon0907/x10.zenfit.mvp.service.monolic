@@ -302,6 +302,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/roles/**")
                         .hasRole("ADMIN")
 
+                        // Client APIs
+                        .requestMatchers("/api/clients", "/api/clients/**")
+                        .hasAnyRole("ADMIN", "HEAD_OF_TRAINING", "TEAM_MANAGER", "PT", "STAFF")
+
+                        // Image Signature API
+                        .requestMatchers("/api/images/**")
+                        .authenticated()
+
                         // Những request còn lại cần login
                         .anyRequest()
                         .authenticated()

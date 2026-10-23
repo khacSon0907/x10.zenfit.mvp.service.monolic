@@ -56,13 +56,14 @@ public class ImageSignatureService implements IImageSignatureService {
 
     private String resolveFolder(ImageTargetType targetType) {
         return switch (targetType) {
-            case PRODUCT -> "PoloMan/products";
-            case USER_AVATAR -> "PoloMan/users/avatars";
-            case CATEGORY -> "PoloMan/categories";
-            case BANNER -> "PoloMan/banners";
-            case REVIEW -> "PoloMan/reviews";
-            case REFUND -> "PoloMan/refunds";
-            case CHAT -> "PoloMan/chats";
+            case PRODUCT -> "Zenfit/products";
+            case USER_AVATAR -> "Zenfit/users/avatars";
+            case CLIENT_AVATAR -> "Zenfit/clients/avatars";
+            case CATEGORY -> "Zenfit/categories";
+            case BANNER -> "Zenfit/banners";
+            case REVIEW -> "Zenfit/reviews";
+            case REFUND -> "Zenfit/refunds";
+            case CHAT -> "Zenfit/chats";
             default -> throw new IllegalArgumentException("Unsupported image targetType: " + targetType);
         };
     }

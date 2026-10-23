@@ -1,5 +1,9 @@
 package x10.zenfit.mvp.service.common.domain.entities.client;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import x10.zenfit.mvp.service.common.domain.enums.ClientStatus;
 import x10.zenfit.mvp.service.common.domain.enums.ExperienceLevel;
 import x10.zenfit.mvp.service.common.domain.enums.FitnessGoal;
@@ -7,6 +11,10 @@ import x10.zenfit.mvp.service.common.domain.enums.FitnessGoal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ClientEntity {
     // Thông tin cơ bản
     private String id;
