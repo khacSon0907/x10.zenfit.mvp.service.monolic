@@ -306,6 +306,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/clients", "/api/clients/**")
                         .hasAnyRole("ADMIN", "HEAD_OF_TRAINING", "TEAM_MANAGER", "PT", "STAFF")
 
+                        // PT Contract APIs
+                        .requestMatchers("/api/pt-contracts", "/api/pt-contracts/**")
+                        .hasAnyRole("ADMIN", "HEAD_OF_TRAINING", "TEAM_MANAGER", "PT", "STAFF")
+
                         // Image Signature API
                         .requestMatchers("/api/images/**")
                         .authenticated()
