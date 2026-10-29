@@ -8,5 +8,7 @@ public enum ImageTargetType {
     BANNER,
     REVIEW,
     REFUND,
-    CHAT
+    CHAT,
+    CLIENT_BODY_PHOTO
+
 }

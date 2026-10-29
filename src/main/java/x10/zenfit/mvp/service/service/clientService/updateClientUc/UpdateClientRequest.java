@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import x10.zenfit.mvp.service.common.domain.enums.ClientStatus;
-import x10.zenfit.mvp.service.common.domain.enums.ExperienceLevel;
-import x10.zenfit.mvp.service.common.domain.enums.FitnessGoal;
 
 import java.time.LocalDate;
 
@@ -25,7 +23,6 @@ public class UpdateClientRequest {
 
     private LocalDate dateOfBirth;
 
-    @NotBlank(message = "Số điện thoại không được để trống")
     private String phone;
 
     @Email(message = "Định dạng email không hợp lệ")
@@ -37,27 +34,14 @@ public class UpdateClientRequest {
 
     private ClientStatus status;
 
-    // Chỉ số cơ thể
+    private String frontPhotoUrl;
+    private String backPhotoUrl;
+    private String sidePhotoUrl;
+
+    // Chỉ số cơ thể ban đầu
     private Double height;
 
     private Double initialWeight;
-
-    // Mục tiêu & trình độ
-    private FitnessGoal fitnessGoal;
-
-    private ExperienceLevel experienceLevel;
-
-    private Double targetWeight;
-
-    // Sức khỏe
-    private String medicalConditions;
-
-    private String injuries;
-
-    // Liên hệ khẩn cấp
-    private String emergencyContactName;
-
-    private String emergencyContactPhone;
 
     // PT phụ trách
     private String assignedTrainerId;

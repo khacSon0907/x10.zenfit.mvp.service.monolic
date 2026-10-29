@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import x10.zenfit.mvp.service.common.domain.enums.ContractStatus;
+import x10.zenfit.mvp.service.service.clientService.ClientGoalResponse;
 import x10.zenfit.mvp.service.service.clientService.ClientResponse;
 
 import java.math.BigDecimal;
@@ -21,11 +22,12 @@ public class PtContractResponse {
     private String clientId;
     private String trainerId;
 
-    // Chi tiết thông tin khách hàng đi kèm (nếu tìm thấy)
+    // Chi tiết thông tin khách hàng đi kèm (nếu có)
     private ClientResponse client;
 
-    private String goal;
-    private Double targetWeight;
+    // Chi tiết mục tiêu khách hàng đi kèm (nếu có)
+    private ClientGoalResponse goal;
+
     private Integer totalSessions;
     private Integer bonusSessions;
     private Integer usedSessions;

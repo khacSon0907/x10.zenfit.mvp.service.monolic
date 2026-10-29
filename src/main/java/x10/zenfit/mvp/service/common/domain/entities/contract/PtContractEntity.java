@@ -18,25 +18,18 @@ public class PtContractEntity {
     private String id;
     private String clientId;
     private String trainerId;
-
-    private String goal;               // String, PT tự điền
-    private Double targetWeight;
     private Integer totalSessions;     // số buổi mua
     private Integer bonusSessions;     // buổi tặng
     private Integer usedSessions;      // đã tập (counter)
     // remaining = totalSessions + bonusSessions - usedSessions
-
     private LocalDate startDate;
     private LocalDate endDate;         // hạn sử dụng gói
-
     private BigDecimal price;
     private BigDecimal paidAmount;
-
     private ContractStatus status;     // ACTIVE, COMPLETED, EXPIRED, FROZEN, CANCELLED
     private String notes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
     public int getRemainingSessions() {
         int total = totalSessions != null ? totalSessions : 0;
         int bonus = bonusSessions != null ? bonusSessions : 0;

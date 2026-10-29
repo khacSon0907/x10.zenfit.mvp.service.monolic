@@ -49,9 +49,30 @@ public class ClientController {
         );
     }
 
+    @GetMapping("/search")
+    public ApiResponse<List<ClientResponse>> searchClients(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String trainerId
+    ) {
+        List<ClientResponse> response = coreClientService.searchClients(keyword, trainerId);
+        return ApiResponse.ok(
+                "CLIENT.SEARCH_SUCCESS",
+                "Tìm kiếm khách hàng thành công",
+                response
+        );
+    }
+
     @GetMapping
-    public ApiResponse<List<ClientResponse>> getAllClients(@RequestParam(required = false) String trainerId) {
-        List<ClientResponse> response = coreClientService.getAllClients(trainerId);
+    public ApiResponse<List<ClientResponse>> getAllClients(
+            @RequestParam(required = false) String trainerId,
+            @RequestParam(required = false) String search
+    ) {
+        List<ClientResponse> response;
+        if (search != null && !search.isBlank()) {
+            response = coreClientService.searchClients(search, trainerId);
+        } else {
+            response = coreClientService.getAllClients(trainerId);
+        }
         return ApiResponse.ok(
                 "CLIENT.GET_ALL_SUCCESS",
                 "Lấy danh sách khách hàng thành công",

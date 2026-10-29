@@ -23,5 +23,9 @@ public interface IClientRepository {
 
     List<ClientEntity> findByAssignedTrainerId(String assignedTrainerId);
 
+    List<ClientEntity> searchClients(String keyword, String trainerId);
+
+    List<ClientEntity> findByFullName(String fullName);
+
     void deleteById(String id);
 }

@@ -24,8 +24,6 @@ public class PtContractDocument {
     private String clientId;
     private String trainerId;
 
-    private String goal;
-    private Double targetWeight;
     private Integer totalSessions;
     private Integer bonusSessions;
     private Integer usedSessions;

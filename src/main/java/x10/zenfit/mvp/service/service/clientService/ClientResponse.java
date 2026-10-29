@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import x10.zenfit.mvp.service.common.domain.enums.ClientStatus;
-import x10.zenfit.mvp.service.common.domain.enums.ExperienceLevel;
-import x10.zenfit.mvp.service.common.domain.enums.FitnessGoal;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,22 +25,13 @@ public class ClientResponse {
     private String avatarUrl;
     private ClientStatus status;
 
-    // Chỉ số cơ thể
+    private String frontPhotoUrl;
+    private String backPhotoUrl;
+    private String sidePhotoUrl;
+
+    // Chỉ số cơ thể ban đầu
     private Double height;
     private Double initialWeight;
-
-    // Mục tiêu & trình độ
-    private FitnessGoal fitnessGoal;
-    private ExperienceLevel experienceLevel;
-    private Double targetWeight;
-
-    // Sức khỏe
-    private String medicalConditions;
-    private String injuries;
-
-    // Liên hệ khẩn cấp
-    private String emergencyContactName;
-    private String emergencyContactPhone;
 
     // PT phụ trách
     private String assignedTrainerId;

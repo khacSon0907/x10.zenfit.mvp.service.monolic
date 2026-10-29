@@ -65,17 +65,12 @@ public class UpdateClientUcImpl implements IUpdateClientUc {
             existing.setStatus(request.getStatus());
         }
 
+        existing.setFrontPhotoUrl(request.getFrontPhotoUrl());
+        existing.setBackPhotoUrl(request.getBackPhotoUrl());
+        existing.setSidePhotoUrl(request.getSidePhotoUrl());
+
         existing.setHeight(request.getHeight());
         existing.setInitialWeight(request.getInitialWeight());
-        existing.setFitnessGoal(request.getFitnessGoal());
-        existing.setExperienceLevel(request.getExperienceLevel());
-        existing.setTargetWeight(request.getTargetWeight());
-
-        existing.setMedicalConditions(request.getMedicalConditions());
-        existing.setInjuries(request.getInjuries());
-
-        existing.setEmergencyContactName(request.getEmergencyContactName());
-        existing.setEmergencyContactPhone(request.getEmergencyContactPhone());
 
         existing.setAssignedTrainerId(request.getAssignedTrainerId());
         existing.setNotes(request.getNotes());

@@ -2,9 +2,11 @@ package x10.zenfit.mvp.service.service.contractService.getPtContractUc;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import x10.zenfit.mvp.service.Repository.IClientGoalRepository;
 import x10.zenfit.mvp.service.Repository.IClientRepository;
 import x10.zenfit.mvp.service.Repository.IPtContractRepository;
 import x10.zenfit.mvp.service.common.domain.entities.client.ClientEntity;
+import x10.zenfit.mvp.service.common.domain.entities.client.ClientGoalEntity;
 import x10.zenfit.mvp.service.common.domain.entities.contract.PtContractEntity;
 import x10.zenfit.mvp.service.service.contractService.PtContractResponse;
 import x10.zenfit.mvp.service.service.contractService.PtContractResponseMapper;
@@ -17,6 +19,7 @@ public class GetPtContractUcImpl implements IGetPtContractUc {
 
     private final IPtContractRepository ptContractRepository;
     private final IClientRepository clientRepository;
+    private final IClientGoalRepository clientGoalRepository;
 
     @Override
     public PtContractResponse getPtContractById(String id) {
@@ -28,10 +31,12 @@ public class GetPtContractUcImpl implements IGetPtContractUc {
                 .orElseThrow(() -> new BusinessException(PtContractError.CONTRACT_NOT_FOUND));
 
         ClientEntity client = null;
+        ClientGoalEntity goal = null;
         if (contract.getClientId() != null && !contract.getClientId().isBlank()) {
             client = clientRepository.findById(contract.getClientId()).orElse(null);
+            goal = clientGoalRepository.findActiveGoalByClientId(contract.getClientId()).orElse(null);
         }
 
-        return PtContractResponseMapper.toResponse(contract, client);
+        return PtContractResponseMapper.toResponse(contract, client, goal);
     }
 }

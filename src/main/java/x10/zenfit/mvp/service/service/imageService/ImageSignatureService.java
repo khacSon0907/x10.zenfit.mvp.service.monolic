@@ -54,11 +54,13 @@ public class ImageSignatureService implements IImageSignatureService {
         );
     }
 
+
     private String resolveFolder(ImageTargetType targetType) {
         return switch (targetType) {
             case PRODUCT -> "Zenfit/products";
             case USER_AVATAR -> "Zenfit/users/avatars";
             case CLIENT_AVATAR -> "Zenfit/clients/avatars";
+            case CLIENT_BODY_PHOTO -> "Zenfit/clients/body-photos";
             case CATEGORY -> "Zenfit/categories";
             case BANNER -> "Zenfit/banners";
             case REVIEW -> "Zenfit/reviews";

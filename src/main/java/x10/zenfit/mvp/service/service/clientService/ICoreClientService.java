@@ -13,6 +13,8 @@ public interface ICoreClientService {
 
     List<ClientResponse> getAllClients(String assignedTrainerId);
 
+    List<ClientResponse> searchClients(String keyword, String assignedTrainerId);
+
     ClientResponse updateClient(String id, UpdateClientRequest request);
 
     void deleteClient(String id);

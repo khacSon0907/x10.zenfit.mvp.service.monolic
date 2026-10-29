@@ -7,6 +7,7 @@ import x10.zenfit.mvp.service.service.clientService.createClientUc.ICreateClient
 import x10.zenfit.mvp.service.service.clientService.deleteClientUc.IDeleteClientUc;
 import x10.zenfit.mvp.service.service.clientService.getAllClientsUc.IGetAllClientsUc;
 import x10.zenfit.mvp.service.service.clientService.getClientUc.IGetClientUc;
+import x10.zenfit.mvp.service.service.clientService.searchClientsUc.ISearchClientsUc;
 import x10.zenfit.mvp.service.service.clientService.updateClientUc.IUpdateClientUc;
 import x10.zenfit.mvp.service.service.clientService.updateClientUc.UpdateClientRequest;
 
@@ -19,6 +20,7 @@ public class CoreClientServiceImpl implements ICoreClientService {
     private final ICreateClientUc createClientUc;
     private final IGetClientUc getClientUc;
     private final IGetAllClientsUc getAllClientsUc;
+    private final ISearchClientsUc searchClientsUc;
     private final IUpdateClientUc updateClientUc;
     private final IDeleteClientUc deleteClientUc;
 
@@ -35,6 +37,11 @@ public class CoreClientServiceImpl implements ICoreClientService {
     @Override
     public List<ClientResponse> getAllClients(String assignedTrainerId) {
         return getAllClientsUc.getAllClients(assignedTrainerId);
+    }
+
+    @Override
+    public List<ClientResponse> searchClients(String keyword, String assignedTrainerId) {
+        return searchClientsUc.searchClients(keyword, assignedTrainerId);
     }
 
     @Override

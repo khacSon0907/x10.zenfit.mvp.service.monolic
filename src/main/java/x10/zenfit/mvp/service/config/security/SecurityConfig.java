@@ -282,10 +282,10 @@ public class SecurityConfig {
                         .authenticated()
 
                         // User API cần login
-                        .requestMatchers(HttpMethod.GET, "/api/users/me")
+                        .requestMatchers(HttpMethod.GET, "/api/user/me")
                         .authenticated()
 
-                        .requestMatchers(HttpMethod.PUT, "/api/users/me/update")
+                        .requestMatchers(HttpMethod.PUT, "/api/user/me/**")
                         .authenticated()
 
                         // Quản lý xem toàn bộ user

@@ -18,4 +18,10 @@ public interface ClientMongoRepository extends MongoRepository<ClientDocument, S
     boolean existsByPhone(String phone);
 
     List<ClientDocument> findByAssignedTrainerId(String assignedTrainerId);
+
+    List<ClientDocument> findByFullNameContainingIgnoreCase(String fullName);
+
+    List<ClientDocument> findByFullNameIgnoreCase(String fullName);
+
+    List<ClientDocument> findByFullNameContainingIgnoreCaseAndAssignedTrainerId(String fullName, String assignedTrainerId);
 }

@@ -19,8 +19,10 @@ public class UpdatePtContractRequest {
 
     private String trainerId;
 
-    private String goal;
+    // Mục tiêu tập luyện nếu cần cập nhật
+    private String goalType;
     private Double targetWeight;
+    private String goalNote;
 
     @Min(value = 1, message = "Tổng số buổi tập phải từ 1 buổi trở lên")
     private Integer totalSessions;

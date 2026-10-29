@@ -21,26 +21,44 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class CreatePtContractRequest {
 
-    // 1. Mã khách hàng nếu đã tồn tại và được chọn từ hệ thống
+    // 1. Mã khách hàng nếu đã tồn tại và được chọn từ hệ thống (kết quả tìm kiếm)
     private String clientId;
 
-    // 2. Thông tin khách hàng dạng object lồng (nếu nhập thông tin khách hàng mới / tìm kiếm)
+    // 2. Tên tìm kiếm hoặc tra cứu khách hàng có sẵn
+    private String searchClientName;
+
+    // 3. Thông tin khách hàng dạng object lồng (nếu nhập thông tin khách hàng mới)
     @Valid
     private CreateClientRequest clientInfo;
 
-    // 3. Các trường thông tin khách hàng phẳng tiện lợi (nếu frontend gửi phẳng thay vì object clientInfo)
+    // 4. Các trường thông tin khách hàng dạng phẳng
     private String clientFullName;
     private String clientPhone;
     private String clientEmail;
     private String clientGender;
+    private LocalDate clientDateOfBirth;
     private String clientAddress;
+    private String clientAvatarUrl;
 
-    // 4. Thông tin hợp đồng
+    // Ảnh hình thể ban đầu
+    private String clientFrontPhotoUrl;
+    private String clientBackPhotoUrl;
+    private String clientSidePhotoUrl;
+
+    // Chỉ số cơ thể ban đầu
+    private Double height;          // cm
+    private Double initialWeight;   // kg
+    private String clientNotes;
+
+    // 5. Thông tin mục tiêu tập luyện (ClientGoalEntity)
+    private String goalType;        // BULKING, CUTTING, GIẢM CÂN, TĂNG CƠ, v.v.
+    private Double targetWeight;    // kg
+    private Double startWeight;     // kg (nếu để trống sẽ lấy initialWeight)
+    private String goalNote;
+
+    // 6. Thông tin hợp đồng PT (PtContractEntity)
     @NotBlank(message = "Mã huấn luyện viên (trainerId) không được để trống")
     private String trainerId;
-
-    private String goal;
-    private Double targetWeight;
 
     @NotNull(message = "Tổng số buổi tập không được để trống")
     @Min(value = 1, message = "Tổng số buổi tập phải từ 1 buổi trở lên")
