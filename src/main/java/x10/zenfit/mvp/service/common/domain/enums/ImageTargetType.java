@@ -9,6 +9,7 @@ public enum ImageTargetType {
     REVIEW,
     REFUND,
     CHAT,
-    CLIENT_BODY_PHOTO
-
+    CLIENT_BODY_PHOTO,
+    TRAINING_SESSION_EVIDENCE,
+    SESSION_EVIDENCE
 }

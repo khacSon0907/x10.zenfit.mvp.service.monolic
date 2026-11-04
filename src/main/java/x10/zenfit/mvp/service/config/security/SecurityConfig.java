@@ -306,8 +306,16 @@ public class SecurityConfig {
                         .requestMatchers("/api/clients", "/api/clients/**")
                         .hasAnyRole("ADMIN", "HEAD_OF_TRAINING", "TEAM_MANAGER", "PT", "STAFF")
 
+                        // Client Goal APIs
+                        .requestMatchers("/api/client-goals", "/api/client-goals/**")
+                        .hasAnyRole("ADMIN", "HEAD_OF_TRAINING", "TEAM_MANAGER", "PT", "STAFF")
+
                         // PT Contract APIs
                         .requestMatchers("/api/pt-contracts", "/api/pt-contracts/**")
+                        .hasAnyRole("ADMIN", "HEAD_OF_TRAINING", "TEAM_MANAGER", "PT", "STAFF")
+
+                        // Training Session & PT Calendar APIs
+                        .requestMatchers("/api/training-sessions", "/api/training-sessions/**")
                         .hasAnyRole("ADMIN", "HEAD_OF_TRAINING", "TEAM_MANAGER", "PT", "STAFF")
 
                         // Image Signature API

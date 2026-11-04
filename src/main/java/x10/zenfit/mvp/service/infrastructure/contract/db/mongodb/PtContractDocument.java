@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import x10.zenfit.mvp.service.common.domain.enums.ContractStatus;
+import x10.zenfit.mvp.service.common.domain.enums.PaymentContractStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -32,9 +33,11 @@ public class PtContractDocument {
     private LocalDate endDate;
 
     private BigDecimal price;
+    private BigDecimal pricePerSession;
     private BigDecimal paidAmount;
 
     private ContractStatus status;
+    private PaymentContractStatus paymentContractStatus;
     private String notes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

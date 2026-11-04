@@ -1,0 +1,377 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ZenFit Training Session & PT Calendar API",
+    "version": "1.0.0",
+    "description": "API suite for PT Training Session management and PT Calendar schedule views"
+  },
+  "paths": {
+    "/api/training-sessions": {
+      "post": {
+        "summary": "Tạo buổi tập mới",
+        "description": "Tạo buổi tập PT mới gắn với học viên và hợp đồng đang hoạt động",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTrainingSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tạo buổi tập thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTrainingSession"
+                }
+              }
+            }
+          },
+          "400": { "description": "Dữ liệu không hợp lệ hoặc thời gian buổi tập nằm trong quá khứ (phải lớn hơn thời gian hiện tại)" },
+          "404": { "description": "Không tìm thấy học viên, PT hoặc hợp đồng" },
+          "409": { "description": "Xung đột lịch của PT hoặc học viên" }
+        }
+      },
+      "get": {
+        "summary": "Lấy danh sách buổi tập có phân trang và lọc",
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "size", "in": "query", "schema": { "type": "integer", "default": 10 } },
+          { "name": "trainerId", "in": "query", "schema": { "type": "string" } },
+          { "name": "clientId", "in": "query", "schema": { "type": "string" } },
+          { "name": "contractId", "in": "query", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "schema": { "$ref": "#/components/schemas/TrainingSessionStatus" } },
+          { "name": "startDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "endDate", "in": "query", "schema": { "type": "string", "format": "date" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lấy danh sách thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePaginatedTrainingSession"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/training-sessions/calendar": {
+      "get": {
+        "summary": "Lấy lịch làm việc PT theo Ngày, Tuần, Tháng",
+        "parameters": [
+          {
+            "name": "view",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "enum": ["DAY", "WEEK", "MONTH"] }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "date" }
+          },
+          { "name": "trainerId", "in": "query", "schema": { "type": "string" } },
+          { "name": "clientId", "in": "query", "schema": { "type": "string" } },
+          { "name": "contractId", "in": "query", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "schema": { "$ref": "#/components/schemas/TrainingSessionStatus" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lấy lịch thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCalendar"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/training-sessions/{id}": {
+      "get": {
+        "summary": "Lấy chi tiết buổi tập theo ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lấy chi tiết thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTrainingSession"
+                }
+              }
+            }
+          },
+          "404": { "description": "Không tìm thấy buổi tập" }
+        }
+      },
+      "patch": {
+        "summary": "Cập nhật thông tin buổi tập",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTrainingSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTrainingSession"
+                }
+              }
+            }
+          },
+          "400": { "description": "Dữ liệu không hợp lệ hoặc buổi tập đã hoàn thành/hủy" },
+          "409": { "description": "Xung đột lịch mới của PT hoặc học viên" }
+        }
+      }
+    },
+    "/api/training-sessions/{id}/complete": {
+      "patch": {
+        "summary": "Xác nhận hoàn thành buổi tập",
+        "description": "Chuyển trạng thái buổi tập sang COMPLETED, ghi nhận completedAt, lưu ảnh minh chứng/ghi chú và tự động trừ 1 buổi tập trong hợp đồng PT liên kết",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteTrainingSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Xác nhận hoàn thành thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTrainingSession"
+                }
+              }
+            }
+          },
+          "400": { "description": "Trạng thái không hợp lệ để hoàn thành" }
+        }
+      }
+    },
+    "/api/training-sessions/{id}/cancel": {
+      "patch": {
+        "summary": "Hủy buổi tập",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hủy buổi tập thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTrainingSession"
+                }
+              }
+            }
+          },
+          "400": { "description": "Trạng thái không hợp lệ để hủy" }
+        }
+      }
+    },
+    "/api/training-sessions/{id}/no-show": {
+      "patch": {
+        "summary": "Đánh dấu học viên vắng mặt",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Đánh dấu vắng mặt thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTrainingSession"
+                }
+              }
+            }
+          },
+          "400": { "description": "Trạng thái không hợp lệ để đánh dấu vắng mặt" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TrainingSessionStatus": {
+        "type": "string",
+        "enum": ["SCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"]
+      },
+      "CreateTrainingSessionRequest": {
+        "type": "object",
+        "required": ["clientId", "contractId", "sessionName", "trainingDate", "startTime"],
+        "properties": {
+          "clientId": { "type": "string", "example": "CLIENT001" },
+          "trainerId": { "type": "string", "example": "TRAINER001" },
+          "contractId": { "type": "string", "example": "CONTRACT001" },
+          "sessionName": { "type": "string", "example": "Upper Body Workout" },
+          "trainingDate": { "type": "string", "format": "date", "example": "2026-11-10" },
+          "startTime": { "type": "string", "format": "time", "example": "08:00:00" },
+          "endTime": { "type": "string", "format": "date-time", "example": "2026-11-10T09:00:00" },
+          "evidenceImageUrls": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Danh sách URL ảnh minh chứng buổi tập"
+          },
+          "note": { "type": "string", "example": "Tập trung ngực và vai" }
+        }
+      },
+      "UpdateTrainingSessionRequest": {
+        "type": "object",
+        "properties": {
+          "clientId": { "type": "string" },
+          "trainerId": { "type": "string" },
+          "contractId": { "type": "string" },
+          "sessionName": { "type": "string" },
+          "trainingDate": { "type": "string", "format": "date" },
+          "startTime": { "type": "string", "format": "time" },
+          "endTime": { "type": "string", "format": "date-time" },
+          "evidenceImageUrls": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Danh sách URL ảnh minh chứng buổi tập"
+          },
+          "note": { "type": "string" }
+        }
+      },
+      "CompleteTrainingSessionRequest": {
+        "type": "object",
+        "properties": {
+          "evidenceImageUrls": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Danh sách URL ảnh minh chứng buổi tập sau khi upload Cloudinary"
+          },
+          "note": { "type": "string", "description": "Ghi chú buổi tập" }
+        }
+      },
+      "TrainingSessionResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "clientId": { "type": "string" },
+          "trainerId": { "type": "string" },
+          "contractId": { "type": "string" },
+          "sessionName": { "type": "string" },
+          "trainingDate": { "type": "string", "format": "date" },
+          "startTime": { "type": "string", "format": "time" },
+          "endTime": { "type": "string", "format": "date-time" },
+          "status": { "$ref": "#/components/schemas/TrainingSessionStatus" },
+          "checkInAt": { "type": "string", "format": "date-time" },
+          "completedAt": { "type": "string", "format": "date-time" },
+          "evidenceImageUrls": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "note": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "TrainingSessionCalendarItemResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "clientId": { "type": "string" },
+          "trainerId": { "type": "string" },
+          "contractId": { "type": "string" },
+          "sessionName": { "type": "string" },
+          "trainingDate": { "type": "string", "format": "date" },
+          "startTime": { "type": "string", "format": "time" },
+          "endTime": { "type": "string", "format": "date-time" },
+          "status": { "$ref": "#/components/schemas/TrainingSessionStatus" },
+          "evidenceImageUrls": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "note": { "type": "string" }
+        }
+      },
+      "TrainingSessionCalendarResponse": {
+        "type": "object",
+        "properties": {
+          "view": { "type": "string", "enum": ["DAY", "WEEK", "MONTH"] },
+          "startDate": { "type": "string", "format": "date" },
+          "endDate": { "type": "string", "format": "date" },
+          "totalSessions": { "type": "integer" },
+          "sessions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TrainingSessionCalendarItemResponse" }
+          }
+        }
+      },
+      "ApiResponseTrainingSession": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "integer", "example": 200 },
+          "code": { "type": "string", "example": "SESSION.SUCCESS" },
+          "message": { "type": "string", "example": "Thao tác thành công" },
+          "data": { "$ref": "#/components/schemas/TrainingSessionResponse" }
+        }
+      },
+      "ApiResponseCalendar": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "integer", "example": 200 },
+          "code": { "type": "string", "example": "SESSION.CALENDAR_SUCCESS" },
+          "message": { "type": "string", "example": "Lấy lịch làm việc PT thành công" },
+          "data": { "$ref": "#/components/schemas/TrainingSessionCalendarResponse" }
+        }
+      },
+      "ApiResponsePaginatedTrainingSession": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "integer", "example": 200 },
+          "code": { "type": "string", "example": "SESSION.GET_PAGINATED_SUCCESS" },
+          "message": { "type": "string", "example": "Lấy danh sách thành công" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/TrainingSessionResponse" }
+              },
+              "page": { "type": "integer" },
+              "size": { "type": "integer" },
+              "totalElements": { "type": "integer" },
+              "totalPages": { "type": "integer" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

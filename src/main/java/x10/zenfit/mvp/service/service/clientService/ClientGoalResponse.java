@@ -18,9 +18,12 @@ public class ClientGoalResponse {
 
     private String id;
     private String clientId;
+    private String trainerId;
+    private String goalName;
     private String goalType;
     private LocalDate startDate;
     private LocalDate endDate;
+    private LocalDate actualEndDate;
     private Double startWeight;
     private Double targetWeight;
     private Double endWeight;
@@ -37,9 +40,12 @@ public class ClientGoalResponse {
         return ClientGoalResponse.builder()
                 .id(entity.getId())
                 .clientId(entity.getClientId())
+                .trainerId(entity.getTrainerId())
+                .goalName(entity.getGoalName())
                 .goalType(entity.getGoalType())
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
+                .actualEndDate(entity.getActualEndDate())
                 .startWeight(entity.getStartWeight())
                 .targetWeight(entity.getTargetWeight())
                 .endWeight(entity.getEndWeight())

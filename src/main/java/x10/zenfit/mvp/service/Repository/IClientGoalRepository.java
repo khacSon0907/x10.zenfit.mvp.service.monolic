@@ -12,6 +12,8 @@ public interface IClientGoalRepository {
 
     Optional<ClientGoalEntity> findById(String id);
 
+    List<ClientGoalEntity> findAll();
+
     List<ClientGoalEntity> findByClientId(String clientId);
 
     List<ClientGoalEntity> findByClientIdAndStatus(String clientId, GoalPhaseStatus status);
@@ -21,4 +23,6 @@ public interface IClientGoalRepository {
     Optional<ClientGoalEntity> findActiveGoalByClientId(String clientId);
 
     void deleteById(String id);
+
+    boolean existsById(String id);
 }

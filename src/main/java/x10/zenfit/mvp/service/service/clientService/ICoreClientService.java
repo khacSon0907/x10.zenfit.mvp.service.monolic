@@ -1,6 +1,8 @@
 package x10.zenfit.mvp.service.service.clientService;
 
 import x10.zenfit.mvp.service.service.clientService.createClientUc.CreateClientRequest;
+import x10.zenfit.mvp.service.service.clientService.getPtClientsUc.GetPtClientsQuery;
+import x10.zenfit.mvp.service.service.clientService.getPtClientsUc.PaginatedClientResponse;
 import x10.zenfit.mvp.service.service.clientService.updateClientUc.UpdateClientRequest;
 
 import java.util.List;
@@ -14,6 +16,8 @@ public interface ICoreClientService {
     List<ClientResponse> getAllClients(String assignedTrainerId);
 
     List<ClientResponse> searchClients(String keyword, String assignedTrainerId);
+
+    PaginatedClientResponse getPtClients(GetPtClientsQuery query);
 
     ClientResponse updateClient(String id, UpdateClientRequest request);
 

@@ -21,10 +21,13 @@ public class ClientGoalDocument {
     @Id
     private String id;
     private String clientId;
+    private String trainerId;
 
+    private String goalName;
     private String goalType;
     private LocalDate startDate;
     private LocalDate endDate;
+    private LocalDate actualEndDate;
 
     private Double startWeight;
     private Double targetWeight;

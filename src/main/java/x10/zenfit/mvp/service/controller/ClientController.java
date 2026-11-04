@@ -3,6 +3,8 @@ package x10.zenfit.mvp.service.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,9 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+import x10.zenfit.mvp.service.common.domain.enums.ClientStatus;
 import x10.zenfit.mvp.service.service.clientService.ClientResponse;
 import x10.zenfit.mvp.service.service.clientService.ICoreClientService;
 import x10.zenfit.mvp.service.service.clientService.createClientUc.CreateClientRequest;
+import x10.zenfit.mvp.service.service.clientService.getPtClientsUc.GetPtClientsQuery;
+import x10.zenfit.mvp.service.service.clientService.getPtClientsUc.PaginatedClientResponse;
 import x10.zenfit.mvp.service.service.clientService.updateClientUc.UpdateClientRequest;
 import x10.zenfit.mvp.service.share.response.ApiResponse;
 
@@ -35,6 +41,35 @@ public class ClientController {
         return ApiResponse.created(
                 "CLIENT.CREATE_SUCCESS",
                 "Thêm mới khách hàng thành công",
+                response
+        );
+    }
+
+    @GetMapping("/my-clients")
+    public ApiResponse<PaginatedClientResponse> getMyClients(
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) ClientStatus status,
+            @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+            @RequestParam(required = false, defaultValue = "DESC") String sortDirection
+    ) {
+        String trainerId = getCurrentUserId();
+
+        GetPtClientsQuery query = GetPtClientsQuery.builder()
+                .trainerId(trainerId)
+                .page(page)
+                .size(8)
+                .search(search)
+                .status(status)
+                .sortBy(sortBy)
+                .sortDirection(sortDirection)
+                .build();
+
+        PaginatedClientResponse response = coreClientService.getPtClients(query);
+
+        return ApiResponse.ok(
+                "CLIENT.GET_PAGINATED_SUCCESS",
+                "Lấy danh sách khách hàng phân trang thành công",
                 response
         );
     }
@@ -101,5 +136,18 @@ public class ClientController {
                 "Xóa khách hàng thành công",
                 null
         );
+    }
+
+    private String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null ||
+                !authentication.isAuthenticated() ||
+                authentication.getPrincipal() == null ||
+                "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
+        }
+
+        return authentication.getPrincipal().toString();
     }
 }

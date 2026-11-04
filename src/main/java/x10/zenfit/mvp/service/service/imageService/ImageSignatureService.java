@@ -66,6 +66,7 @@ public class ImageSignatureService implements IImageSignatureService {
             case REVIEW -> "Zenfit/reviews";
             case REFUND -> "Zenfit/refunds";
             case CHAT -> "Zenfit/chats";
+            case TRAINING_SESSION_EVIDENCE, SESSION_EVIDENCE -> "Zenfit/training-sessions/evidence";
             default -> throw new IllegalArgumentException("Unsupported image targetType: " + targetType);
         };
     }

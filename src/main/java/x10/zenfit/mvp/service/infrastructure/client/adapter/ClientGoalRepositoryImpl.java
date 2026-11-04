@@ -32,6 +32,14 @@ public class ClientGoalRepositoryImpl implements IClientGoalRepository {
     }
 
     @Override
+    public List<ClientGoalEntity> findAll() {
+        return clientGoalMongoRepository.findAll()
+                .stream()
+                .map(ClientGoalMapper::toEntity)
+                .toList();
+    }
+
+    @Override
     public List<ClientGoalEntity> findByClientId(String clientId) {
         return clientGoalMongoRepository.findByClientId(clientId)
                 .stream()
@@ -62,5 +70,10 @@ public class ClientGoalRepositoryImpl implements IClientGoalRepository {
     @Override
     public void deleteById(String id) {
         clientGoalMongoRepository.deleteById(id);
+    }
+
+    @Override
+    public boolean existsById(String id) {
+        return clientGoalMongoRepository.existsById(id);
     }
 }

@@ -2,18 +2,15 @@ package x10.zenfit.mvp.service.service.contractService.updatePtContractUc;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import x10.zenfit.mvp.service.Repository.IClientGoalRepository;
-import x10.zenfit.mvp.service.Repository.IClientRepository;
 import x10.zenfit.mvp.service.Repository.IPtContractRepository;
-import x10.zenfit.mvp.service.common.domain.entities.client.ClientEntity;
-import x10.zenfit.mvp.service.common.domain.entities.client.ClientGoalEntity;
 import x10.zenfit.mvp.service.common.domain.entities.contract.PtContractEntity;
-import x10.zenfit.mvp.service.common.domain.enums.GoalPhaseStatus;
-import x10.zenfit.mvp.service.service.contractService.PtContractResponse;
-import x10.zenfit.mvp.service.service.contractService.PtContractResponseMapper;
+import x10.zenfit.mvp.service.common.domain.enums.PaymentContractStatus;
 import x10.zenfit.mvp.service.share.exception.BusinessException;
 import x10.zenfit.mvp.service.share.exception.contract.PtContractError;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Component
@@ -21,13 +18,11 @@ import java.time.LocalDateTime;
 public class UpdatePtContractUcImpl implements IUpdatePtContractUc {
 
     private final IPtContractRepository ptContractRepository;
-    private final IClientRepository clientRepository;
-    private final IClientGoalRepository clientGoalRepository;
 
     @Override
-    public PtContractResponse updatePtContract(String id, UpdatePtContractRequest request) {
+    public PtContractEntity updatePtContract(String id, UpdatePtContractRequest request) {
         if (id == null || id.isBlank()) {
-            throw new IllegalArgumentException("Contract ID là bắt buộc");
+            throw new BusinessException(PtContractError.INVALID_CONTRACT_DATA);
         }
         if (request == null) {
             throw new BusinessException(PtContractError.INVALID_CONTRACT_DATA);
@@ -36,86 +31,96 @@ public class UpdatePtContractUcImpl implements IUpdatePtContractUc {
         PtContractEntity existing = ptContractRepository.findById(id.trim())
                 .orElseThrow(() -> new BusinessException(PtContractError.CONTRACT_NOT_FOUND));
 
-        if (request.getTrainerId() != null && !request.getTrainerId().isBlank()) {
-            existing.setTrainerId(request.getTrainerId().trim());
-        }
+        // 1. Kiểm tra ngày hợp đồng
+        LocalDate newStartDate = request.getStartDate() != null ? request.getStartDate() : existing.getStartDate();
+        LocalDate newEndDate = request.getEndDate() != null ? request.getEndDate() : existing.getEndDate();
 
-        if (request.getTotalSessions() != null) {
-            existing.setTotalSessions(request.getTotalSessions());
-        }
-
-        if (request.getBonusSessions() != null) {
-            existing.setBonusSessions(request.getBonusSessions());
-        }
-
-        if (request.getUsedSessions() != null) {
-            existing.setUsedSessions(request.getUsedSessions());
+        if (newStartDate != null && newEndDate != null && !newEndDate.isAfter(newStartDate)) {
+            throw new BusinessException(PtContractError.INVALID_CONTRACT_DATA);
         }
 
         if (request.getStartDate() != null) {
             existing.setStartDate(request.getStartDate());
         }
-
         if (request.getEndDate() != null) {
             existing.setEndDate(request.getEndDate());
+        }
+
+        // 2. Kiểm tra các thông số buổi tập
+        int totalSessions = request.getTotalSessions() != null ? request.getTotalSessions()
+                : (existing.getTotalSessions() != null ? existing.getTotalSessions() : 0);
+        int bonusSessions = request.getBonusSessions() != null ? request.getBonusSessions()
+                : (existing.getBonusSessions() != null ? existing.getBonusSessions() : 0);
+        int usedSessions = request.getUsedSessions() != null ? request.getUsedSessions()
+                : (existing.getUsedSessions() != null ? existing.getUsedSessions() : 0);
+
+        if (usedSessions > totalSessions + bonusSessions) {
+            throw new BusinessException(PtContractError.SESSIONS_EXCEEDED);
+        }
+
+        if (request.getTotalSessions() != null) {
+            existing.setTotalSessions(request.getTotalSessions());
+        }
+        if (request.getBonusSessions() != null) {
+            existing.setBonusSessions(request.getBonusSessions());
+        }
+        if (request.getUsedSessions() != null) {
+            existing.setUsedSessions(request.getUsedSessions());
+        }
+
+        // 3. Kiểm tra tài chính (giá & thanh toán)
+        BigDecimal price = request.getPrice() != null ? request.getPrice() : existing.getPrice();
+        BigDecimal paidAmount = request.getPaidAmount() != null ? request.getPaidAmount() : existing.getPaidAmount();
+
+        if (price != null && price.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException(PtContractError.INVALID_CONTRACT_DATA);
+        }
+        if (paidAmount != null && paidAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessException(PtContractError.INVALID_CONTRACT_DATA);
+        }
+        if (paidAmount != null && price != null && paidAmount.compareTo(price) > 0) {
+            throw new BusinessException(PtContractError.INVALID_CONTRACT_DATA);
         }
 
         if (request.getPrice() != null) {
             existing.setPrice(request.getPrice());
         }
-
         if (request.getPaidAmount() != null) {
             existing.setPaidAmount(request.getPaidAmount());
         }
 
+        // 4. Giá mỗi buổi tập
+        if (request.getPricePerSession() != null) {
+            existing.setPricePerSession(request.getPricePerSession());
+        } else if ((request.getPrice() != null || request.getTotalSessions() != null)
+                && price != null && totalSessions > 0) {
+            existing.setPricePerSession(price.divide(BigDecimal.valueOf(totalSessions), 2, RoundingMode.HALF_UP));
+        }
+
+        // 5. Trạng thái thanh toán của hợp đồng
+        if (request.getPaymentContractStatus() != null) {
+            existing.setPaymentContractStatus(request.getPaymentContractStatus());
+        } else if (request.getPaidAmount() != null || request.getPrice() != null) {
+            if (paidAmount == null || paidAmount.compareTo(BigDecimal.ZERO) <= 0) {
+                existing.setPaymentContractStatus(PaymentContractStatus.UNPAID);
+            } else if (price != null && paidAmount.compareTo(price) >= 0) {
+                existing.setPaymentContractStatus(PaymentContractStatus.PAID);
+            } else {
+                existing.setPaymentContractStatus(PaymentContractStatus.PARTIALLY_PAID);
+            }
+        }
+
+        // 6. Trạng thái hợp đồng & ghi chú
         if (request.getStatus() != null) {
             existing.setStatus(request.getStatus());
         }
-
         if (request.getNotes() != null) {
             existing.setNotes(request.getNotes());
         }
 
         existing.setUpdatedAt(LocalDateTime.now());
 
-        PtContractEntity saved = ptContractRepository.save(existing);
-
-        ClientEntity client = null;
-        if (saved.getClientId() != null && !saved.getClientId().isBlank()) {
-            client = clientRepository.findById(saved.getClientId()).orElse(null);
-        }
-
-        // Cập nhật mục tiêu nếu có truyền
-        ClientGoalEntity goal = null;
-        if (saved.getClientId() != null && !saved.getClientId().isBlank()) {
-            if (request.getGoalType() != null || request.getTargetWeight() != null) {
-                goal = clientGoalRepository.findActiveGoalByClientId(saved.getClientId()).orElse(null);
-                if (goal != null) {
-                    if (request.getGoalType() != null) goal.setGoalType(request.getGoalType());
-                    if (request.getTargetWeight() != null) goal.setTargetWeight(request.getTargetWeight());
-                    if (request.getGoalNote() != null) goal.setNote(request.getGoalNote());
-                    goal.setUpdatedAt(LocalDateTime.now());
-                    goal = clientGoalRepository.save(goal);
-                } else {
-                    goal = ClientGoalEntity.builder()
-                            .clientId(saved.getClientId())
-                            .goalType(request.getGoalType())
-                            .startDate(saved.getStartDate())
-                            .endDate(saved.getEndDate())
-                            .startWeight(client != null ? client.getInitialWeight() : null)
-                            .targetWeight(request.getTargetWeight())
-                            .status(GoalPhaseStatus.ACTIVE)
-                            .note(request.getGoalNote())
-                            .createdAt(LocalDateTime.now())
-                            .updatedAt(LocalDateTime.now())
-                            .build();
-                    goal = clientGoalRepository.save(goal);
-                }
-            } else {
-                goal = clientGoalRepository.findActiveGoalByClientId(saved.getClientId()).orElse(null);
-            }
-        }
-
-        return PtContractResponseMapper.toResponse(saved, client, goal);
+        return ptContractRepository.save(existing);
     }
 }
+

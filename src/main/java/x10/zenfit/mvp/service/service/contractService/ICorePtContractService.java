@@ -1,6 +1,8 @@
 package x10.zenfit.mvp.service.service.contractService;
 
+import x10.zenfit.mvp.service.common.domain.entities.contract.PtContractEntity;
 import x10.zenfit.mvp.service.common.domain.enums.ContractStatus;
+import x10.zenfit.mvp.service.common.domain.enums.PaymentContractStatus;
 import x10.zenfit.mvp.service.service.contractService.createPtContractUc.CreatePtContractRequest;
 import x10.zenfit.mvp.service.service.contractService.updatePtContractUc.UpdatePtContractRequest;
 
@@ -8,13 +10,21 @@ import java.util.List;
 
 public interface ICorePtContractService {
 
-    PtContractResponse createPtContract(CreatePtContractRequest request);
+    PtContractEntity createPtContract(CreatePtContractRequest request);
 
-    PtContractResponse getPtContractById(String id);
+    PtContractEntity updatePtContract(String id, UpdatePtContractRequest request);
 
-    List<PtContractResponse> getAllPtContracts(String trainerId, String clientId, ContractStatus status);
+    PtContractEntity getPtContractById(String id);
 
-    PtContractResponse updatePtContract(String id, UpdatePtContractRequest request);
+    List<PtContractEntity> getAllPtContracts(
+            String trainerId,
+            String clientId,
+            ContractStatus status,
+            PaymentContractStatus paymentContractStatus
+    );
+
+    // Lấy tất cả hợp đồng theo trainerId
+    List<PtContractEntity> getAllPtContractsByTrainerId(String trainerId);
 
     void deletePtContract(String id);
 }

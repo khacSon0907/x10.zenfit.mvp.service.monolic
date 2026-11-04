@@ -1,0 +1,201 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "PT Client List API",
+    "version": "1.0.0",
+    "description": "API for Personal Trainers to view, paginate, search, filter and sort their assigned clients."
+  },
+  "paths": {
+    "/api/clients/my-clients": {
+      "get": {
+        "summary": "Get paginated list of clients assigned to current PT",
+        "description": "Fetches a paginated slice of clients (8 items per page) assigned to the authenticated PT. Supports keyword search across full name and phone number, status filtering, and sorting.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Page number (1-based index). Defaults to 1 if omitted or less than 1.",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "Number of items per page. Defaults to 8.",
+            "schema": {
+              "type": "integer",
+              "default": 8,
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "description": "Case-insensitive partial keyword to match against client's full name OR phone number.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Filter by client status.",
+            "schema": {
+              "type": "string",
+              "enum": ["ACTIVE", "INACTIVE", "POTENTIAL"]
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "required": false,
+            "description": "Field to sort by. Allowed: 'createdAt', 'fullName'.",
+            "schema": {
+              "type": "string",
+              "default": "createdAt",
+              "enum": ["createdAt", "fullName"]
+            }
+          },
+          {
+            "name": "sortDirection",
+            "in": "query",
+            "required": false,
+            "description": "Sort order. Allowed: 'DESC', 'ASC'.",
+            "schema": {
+              "type": "string",
+              "default": "DESC",
+              "enum": ["DESC", "ASC"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful retrieval of paginated clients (even if empty list).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePaginatedClients"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Missing or invalid Bearer token"
+          },
+          "403": {
+            "description": "Forbidden - Authenticated user lacks PT or manager role"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "ApiResponsePaginatedClients": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "title": {
+            "type": "string",
+            "example": "Success"
+          },
+          "status": {
+            "type": "integer",
+            "example": 200
+          },
+          "code": {
+            "type": "string",
+            "example": "CLIENT.GET_PAGINATED_SUCCESS"
+          },
+          "message": {
+            "type": "string",
+            "example": "Lấy danh sách khách hàng phân trang thành công"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PaginatedClientResponse"
+          }
+        }
+      },
+      "PaginatedClientResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "size": {
+            "type": "integer",
+            "example": 8
+          },
+          "totalElements": {
+            "type": "integer",
+            "example": 20
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 3
+          },
+          "hasNext": {
+            "type": "boolean",
+            "example": true
+          },
+          "hasPrevious": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "ClientResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "6723abc..." },
+          "fullName": { "type": "string", "example": "Nguyễn Văn Minh" },
+          "gender": { "type": "string", "example": "MALE" },
+          "dateOfBirth": { "type": "string", "format": "date", "example": "1995-08-15" },
+          "phone": { "type": "string", "example": "0987654321" },
+          "email": { "type": "string", "format": "email", "example": "minh.nguyen@example.com" },
+          "address": { "type": "string", "example": "123 Đường 3/2, Quận 10, TP.HCM" },
+          "avatarUrl": { "type": "string", "example": "https://res.cloudinary.com/..." },
+          "status": { "type": "string", "example": "ACTIVE" },
+          "assignedTrainerId": { "type": "string", "example": "pt-101" },
+          "height": { "type": "number", "example": 175.0 },
+          "initialWeight": { "type": "number", "example": 78.5 },
+          "notes": { "type": "string", "example": "Mục tiêu giảm 5kg mỡ" },
+          "joinedDate": { "type": "string", "format": "date", "example": "2026-10-01" },
+          "createdAt": { "type": "string", "format": "date-time", "example": "2026-10-01T08:30:00" },
+          "updatedAt": { "type": "string", "format": "date-time", "example": "2026-10-25T14:20:00" }
+        }
+      }
+    }
+  }
+}
+

@@ -1,16 +1,16 @@
 package x10.zenfit.mvp.service.service.contractService.createPtContractUc;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import x10.zenfit.mvp.service.common.domain.enums.ContractStatus;
-import x10.zenfit.mvp.service.service.clientService.createClientUc.CreateClientRequest;
+import x10.zenfit.mvp.service.common.domain.enums.PaymentContractStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,60 +21,62 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class CreatePtContractRequest {
 
-    // 1. Mã khách hàng nếu đã tồn tại và được chọn từ hệ thống (kết quả tìm kiếm)
+    // Mã học viên
+    @NotBlank(message = "Mã học viên không được để trống")
     private String clientId;
 
-    // 2. Tên tìm kiếm hoặc tra cứu khách hàng có sẵn
-    private String searchClientName;
-
-    // 3. Thông tin khách hàng dạng object lồng (nếu nhập thông tin khách hàng mới)
-    @Valid
-    private CreateClientRequest clientInfo;
-
-    // 4. Các trường thông tin khách hàng dạng phẳng
-    private String clientFullName;
-    private String clientPhone;
-    private String clientEmail;
-    private String clientGender;
-    private LocalDate clientDateOfBirth;
-    private String clientAddress;
-    private String clientAvatarUrl;
-
-    // Ảnh hình thể ban đầu
-    private String clientFrontPhotoUrl;
-    private String clientBackPhotoUrl;
-    private String clientSidePhotoUrl;
-
-    // Chỉ số cơ thể ban đầu
-    private Double height;          // cm
-    private Double initialWeight;   // kg
-    private String clientNotes;
-
-    // 5. Thông tin mục tiêu tập luyện (ClientGoalEntity)
-    private String goalType;        // BULKING, CUTTING, GIẢM CÂN, TĂNG CƠ, v.v.
-    private Double targetWeight;    // kg
-    private Double startWeight;     // kg (nếu để trống sẽ lấy initialWeight)
-    private String goalNote;
-
-    // 6. Thông tin hợp đồng PT (PtContractEntity)
-    @NotBlank(message = "Mã huấn luyện viên (trainerId) không được để trống")
+    // Mã huấn luyện viên
+    @NotBlank(message = "Mã huấn luyện viên không được để trống")
     private String trainerId;
 
+    // Tổng số buổi mua
     @NotNull(message = "Tổng số buổi tập không được để trống")
     @Min(value = 1, message = "Tổng số buổi tập phải từ 1 buổi trở lên")
     private Integer totalSessions;
 
-    private Integer bonusSessions;
+    // Số buổi tặng
+    @Min(value = 0, message = "Số buổi tặng không được âm")
+    @Builder.Default
+    private Integer bonusSessions = 0;
 
+    // Ngày bắt đầu
+    @NotNull(message = "Ngày bắt đầu không được để trống")
     private LocalDate startDate;
+
+    // Ngày hết hạn
+    @NotNull(message = "Ngày hết hạn không được để trống")
     private LocalDate endDate;
 
+    // Giá trị hợp đồng
     @NotNull(message = "Giá trị hợp đồng không được để trống")
-    @DecimalMin(value = "0.0", inclusive = true, message = "Giá trị hợp đồng không được âm")
+    @DecimalMin(
+            value = "0.0",
+            inclusive = false,
+            message = "Giá trị hợp đồng phải lớn hơn 0"
+    )
     private BigDecimal price;
 
-    private BigDecimal paidAmount;
+    // Giá tiền một buổi tập (nếu không truyền sẽ tự động tính từ price / totalSessions)
+    @DecimalMin(
+            value = "0.0",
+            inclusive = false,
+            message = "Giá mỗi buổi tập phải lớn hơn 0"
+    )
+    private BigDecimal pricePerSession;
 
-    private ContractStatus status;
+    // Số tiền đã thanh toán
+    @DecimalMin(
+            value = "0.0",
+            inclusive = true,
+            message = "Số tiền thanh toán không được âm"
+    )
+    @Builder.Default
+    private BigDecimal paidAmount = BigDecimal.ZERO;
+
+    // Trạng thái thanh toán (nếu không truyền sẽ tự động xác định dựa vào paidAmount và price)
+    private PaymentContractStatus paymentContractStatus;
+
+    // Ghi chú
+    @Size(max = 1000, message = "Ghi chú tối đa 1000 ký tự")
     private String notes;
 }
