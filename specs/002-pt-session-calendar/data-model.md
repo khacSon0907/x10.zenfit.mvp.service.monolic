@@ -264,5 +264,46 @@ stateDiagram-v2
 
 *Quy tắc chuyển đổi*:
 - Không cho phép cập nhật thông tin (`PATCH /{id}`) hoặc đổi trạng thái nếu buổi tập đã ở `COMPLETED`, `CANCELLED`, hoặc `NO_SHOW`.
-- Thời điểm `checkInAt` và `completedAt` do server tự sinh bằng `LocalDateTime.now()`.
+- Thời điểm `completedAt` do server tự sinh bằng `LocalDateTime.now()`.
+- Khi bấm Hoàn thành buổi tập (`COMPLETED`), hệ thống tự động trừ 1 buổi trong hợp đồng PT liên kết (`contract.usedSessions + 1`).
+
+---
+
+## 5. Trainer Tasks & Daily Activities Model
+
+### 5.1. `TrainerTaskEntity` (Domain Entity)
+Đại diện cho công việc, hoạt động hằng ngày của Huấn luyện viên (PT, Team Manager, Head of Training) như thức dậy, ăn sáng, tập cá nhân, họp team.
+Package: `x10.zenfit.mvp.service.common.domain.entities.trainer`
+
+```java
+public class TrainerTaskEntity {
+    private String id;
+    private String trainerId;          // PT sở hữu việc này
+    private String title;              // "Thức dậy", "Ăn sáng"
+    private String description;
+    private String color;              // Màu hiển thị trên lịch
+    private LocalDate taskDate;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private boolean allDay;
+    private TrainerTaskStatus status;  // TODO, DONE, SKIPPED
+    private LocalDateTime completedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+}
+```
+
+### 5.2. `TrainerTaskStatus` (Domain Enum)
+```java
+public enum TrainerTaskStatus {
+    TODO, DONE, SKIPPED
+}
+```
+
+### 5.3. `TrainerTaskDocument` (MongoDB Document)
+Collection: `trainer_tasks`  
+Package: `x10.zenfit.mvp.service.infrastructure.trainer.db.mongodb`
+Indexes:
+- Compound Index: `{ trainerId: 1, taskDate: 1 }`
+- Compound Index: `{ trainerId: 1, status: 1 }`
 

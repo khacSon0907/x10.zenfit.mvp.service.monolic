@@ -318,6 +318,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/training-sessions", "/api/training-sessions/**")
                         .hasAnyRole("ADMIN", "HEAD_OF_TRAINING", "TEAM_MANAGER", "PT", "STAFF")
 
+                        // Trainer Tasks & Schedule APIs
+                        .requestMatchers("/api/trainer-tasks", "/api/trainer-tasks/**")
+                        .hasAnyRole("ADMIN", "HEAD_OF_TRAINING", "TEAM_MANAGER", "PT", "STAFF")
+
                         // Image Signature API
                         .requestMatchers("/api/images/**")
                         .authenticated()

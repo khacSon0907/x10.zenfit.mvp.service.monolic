@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import x10.zenfit.mvp.service.service.trainerTaskService.TrainerTaskResponse;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -19,5 +21,6 @@ public class TrainingSessionCalendarResponse {
     private LocalDate endDate;
     private int totalSessions;
     private List<TrainingSessionCalendarItemResponse> sessions;
+    private List<TrainerTaskResponse> tasks;
 }
 

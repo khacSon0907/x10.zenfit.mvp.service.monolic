@@ -221,6 +221,145 @@
           "400": { "description": "Trạng thái không hợp lệ để đánh dấu vắng mặt" }
         }
       }
+    },
+    "/api/trainer-tasks": {
+      "post": {
+        "summary": "Tạo công việc / hoạt động mới cho PT",
+        "description": "Tạo lịch hoạt động cá nhân, công việc hằng ngày (ví dụ: thức dậy, ăn sáng, tập luyện)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTrainerTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tạo thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTrainerTask"
+                }
+              }
+            }
+          },
+          "400": { "description": "Dữ liệu không hợp lệ" }
+        }
+      },
+      "get": {
+        "summary": "Lấy danh sách công việc / hoạt động của PT",
+        "parameters": [
+          { "name": "date", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "startDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "endDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "status", "in": "query", "schema": { "$ref": "#/components/schemas/TrainerTaskStatus" } },
+          { "name": "trainerId", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lấy danh sách thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTrainerTaskList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trainer-tasks/{id}": {
+      "get": {
+        "summary": "Lấy chi tiết công việc",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTrainerTask"
+                }
+              }
+            }
+          },
+          "404": { "description": "Không tìm thấy" }
+        }
+      },
+      "patch": {
+        "summary": "Cập nhật công việc",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTrainerTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTrainerTask"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Xóa công việc",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Xóa thành công" }
+        }
+      }
+    },
+    "/api/trainer-tasks/{id}/status": {
+      "patch": {
+        "summary": "Cập nhật nhanh trạng thái (TODO, DONE, SKIPPED)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTrainerTaskStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật trạng thái thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTrainerTask"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -329,6 +468,88 @@
           "sessions": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/TrainingSessionCalendarItemResponse" }
+          },
+          "tasks": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TrainerTaskResponse" }
+          }
+        }
+      },
+      "TrainerTaskStatus": {
+        "type": "string",
+        "enum": ["TODO", "DONE", "SKIPPED"]
+      },
+      "CreateTrainerTaskRequest": {
+        "type": "object",
+        "required": ["title", "taskDate"],
+        "properties": {
+          "trainerId": { "type": "string" },
+          "title": { "type": "string", "example": "Ăn sáng và chuẩn bị giáo án" },
+          "description": { "type": "string" },
+          "color": { "type": "string", "example": "#10B981" },
+          "taskDate": { "type": "string", "format": "date", "example": "2026-11-10" },
+          "startTime": { "type": "string", "format": "time", "example": "07:00:00" },
+          "endTime": { "type": "string", "format": "time", "example": "08:00:00" },
+          "allDay": { "type": "boolean", "default": false }
+        }
+      },
+      "UpdateTrainerTaskRequest": {
+        "type": "object",
+        "properties": {
+          "trainerId": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "color": { "type": "string" },
+          "taskDate": { "type": "string", "format": "date" },
+          "startTime": { "type": "string", "format": "time" },
+          "endTime": { "type": "string", "format": "time" },
+          "allDay": { "type": "boolean" },
+          "status": { "$ref": "#/components/schemas/TrainerTaskStatus" }
+        }
+      },
+      "UpdateTrainerTaskStatusRequest": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": { "$ref": "#/components/schemas/TrainerTaskStatus" }
+        }
+      },
+      "TrainerTaskResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "trainerId": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "color": { "type": "string" },
+          "taskDate": { "type": "string", "format": "date" },
+          "startTime": { "type": "string", "format": "time" },
+          "endTime": { "type": "string", "format": "time" },
+          "allDay": { "type": "boolean" },
+          "status": { "$ref": "#/components/schemas/TrainerTaskStatus" },
+          "completedAt": { "type": "string", "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ApiResponseTrainerTask": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "integer", "example": 200 },
+          "code": { "type": "string", "example": "TRAINER_TASK.SUCCESS" },
+          "message": { "type": "string", "example": "Thao tác thành công" },
+          "data": { "$ref": "#/components/schemas/TrainerTaskResponse" }
+        }
+      },
+      "ApiResponseTrainerTaskList": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "integer", "example": 200 },
+          "code": { "type": "string", "example": "TRAINER_TASK.GET_LIST_SUCCESS" },
+          "message": { "type": "string", "example": "Lấy danh sách thành công" },
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TrainerTaskResponse" }
           }
         }
       },

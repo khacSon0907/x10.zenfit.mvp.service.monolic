@@ -2,8 +2,10 @@ package x10.zenfit.mvp.service.service.trainingSessionService.getCalendarUc;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import x10.zenfit.mvp.service.Repository.ITrainerTaskRepository;
 import x10.zenfit.mvp.service.Repository.ITrainingSessionRepository;
 import x10.zenfit.mvp.service.common.domain.entities.session.TrainingSessionEntity;
+import x10.zenfit.mvp.service.service.trainerTaskService.TrainerTaskResponse;
 import x10.zenfit.mvp.service.share.exception.BusinessException;
 import x10.zenfit.mvp.service.share.exception.session.TrainingSessionError;
 
@@ -17,6 +19,7 @@ import java.util.List;
 public class GetPtCalendarUcImpl implements IGetPtCalendarUc {
 
     private final ITrainingSessionRepository trainingSessionRepository;
+    private final ITrainerTaskRepository trainerTaskRepository;
 
     @Override
     public TrainingSessionCalendarResponse getPtCalendar(PtCalendarQuery query, String currentUserId, boolean isManagement) {
@@ -75,12 +78,27 @@ public class GetPtCalendarUcImpl implements IGetPtCalendarUc {
                 .map(TrainingSessionCalendarItemResponse::fromEntity)
                 .toList();
 
+        // Lấy danh sách công việc / hoạt động của PT trong khoảng thời gian lịch
+        List<TrainerTaskResponse> tasks = List.of();
+        if (targetTrainerId != null && !targetTrainerId.isBlank()) {
+            tasks = trainerTaskRepository.findTasks(targetTrainerId, null, startDate, endDate, null)
+                    .stream()
+                    .map(TrainerTaskResponse::fromEntity)
+                    .toList();
+        } else if (isManagement && (query.getClientId() == null || query.getClientId().isBlank())) {
+            tasks = trainerTaskRepository.findTasks(null, null, startDate, endDate, null)
+                    .stream()
+                    .map(TrainerTaskResponse::fromEntity)
+                    .toList();
+        }
+
         return TrainingSessionCalendarResponse.builder()
                 .view(query.getView())
                 .startDate(startDate)
                 .endDate(endDate)
                 .totalSessions(items.size())
                 .sessions(items)
+                .tasks(tasks)
                 .build();
     }
 }
