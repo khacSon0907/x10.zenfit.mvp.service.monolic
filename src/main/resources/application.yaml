@@ -1,5 +1,9 @@
 server:
   port: ${PORT:8080}
+  # NEW: nhận đúng HTTPS/host gốc khi chạy sau Nginx, Cloudflare, load balancer...
+  forward-headers-strategy: ${FORWARD_HEADERS_STRATEGY:framework}
+  # NEW: tắt server êm, tránh cắt ngang request khi deploy lại
+  shutdown: graceful
 
 spring:
   config:
@@ -10,6 +14,9 @@ spring:
 
   application:
     name: clothing-store-api
+
+  lifecycle:
+    timeout-per-shutdown-phase: 20s # NEW: đi kèm graceful shutdown
 
   data:
     mongodb:
@@ -62,6 +69,10 @@ oauth2:
     client-id: ${GOOGLE_CLIENT_ID}
 
 app:
+  # NEW: cấu hình cookie, đọc bởi CookieUtil qua @Value
+  cookie:
+    secure: ${COOKIE_SECURE:false}      # prod: true
+    same-site: ${COOKIE_SAME_SITE:Lax}  # khác domain FE/BE: None
   mail:
     from: ${MAIL_FROM}
   openai:

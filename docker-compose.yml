@@ -1,21 +1,76 @@
-version: '3.8'
-
 services:
-  app:
+  zenfit-api:
     build:
       context: .
       dockerfile: Dockerfile
-
-    container_name: clothing-store-api
-
+    container_name: zenfit-api
+    restart: unless-stopped
     ports:
-      - "${PORT:-10000}:${PORT:-10000}"
-
+      - "${PORT:-8080}:${PORT:-8080}"
     env_file:
       - .env
-
     environment:
-      SPRING_PROFILES_ACTIVE: prod
-      PORT: ${PORT:-10000}
+      PORT: ${PORT:-8080}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      TZ: Asia/Ho_Chi_Minh
+    networks:
+      - zenfit-network
+    # Bật depends_on nếu bạn sử dụng MongoDB/Redis nội bộ trong Docker Compose:
+    # depends_on:
+    #   mongodb:
+    #     condition: service_healthy
+    #   redis:
+    #     condition: service_healthy
 
-    restart: always
+  # ----------------------------------------------------------------------------
+  # Tùy chọn: MongoDB (Dành cho deploy self-hosted trên VPS / Server riêng)
+  # Nếu bạn dùng MongoDB Atlas (Cloud), bạn có thể comment hoặc xóa service này.
+  # ----------------------------------------------------------------------------
+  mongodb:
+    image: mongo:7.0
+    container_name: zenfit-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: zenfit_db
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - zenfit-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------------------------
+  # Tùy chọn: Redis (Dành cho deploy self-hosted trên VPS / Server riêng)
+  # Nếu bạn dùng Redis Cloud (Upstash, Redis Enterprise), bạn có thể comment service này.
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7.2-alpine
+    container_name: zenfit-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - zenfit-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  zenfit-network:
+    driver: bridge

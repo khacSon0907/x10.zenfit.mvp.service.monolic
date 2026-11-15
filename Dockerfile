@@ -5,40 +5,48 @@ FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /app
 
-# Copy pom.xml trước để cache dependency
+# Copy pom.xml trước để cache dependency layer
 COPY pom.xml .
 
-# Download dependency
-RUN mvn dependency:go-offline -B
+# Tải trước dependencies để tối ưu thời gian build
+RUN mvn dependency:go-offline -B || true
 
-# Copy source code
+# Copy toàn bộ mã nguồn
 COPY src ./src
 
-# Build jar
+# Build file JAR (bỏ qua tests trong quá trình đóng gói image)
 RUN mvn clean package -DskipTests
 
-
 # ==============================================================================
-# STAGE 2: Runtime image
+# STAGE 2: Lightweight, secure runtime image
 # ==============================================================================
 FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-# Create non-root user
-RUN addgroup -S spring && adduser -S spring -G spring
+# Cài đặt tzdata và cấu hình múi giờ Việt Nam (Asia/Ho_Chi_Minh)
+RUN apk add --no-cache tzdata \
+    && cp /usr/share/zoneinfo/Asia/Ho_Chi_Minh /etc/localtime \
+    && echo "Asia/Ho_Chi_Minh" > /etc/timezone
 
-# Copy jar từ builder
+# Tạo user không có đặc quyền root để chạy ứng dụng an toàn
+RUN addgroup -S zenfit && adduser -S zenfit -G zenfit
+
+# Copy jar từ build stage
 COPY --from=builder /app/target/*.jar app.jar
 
-# Set ownership
-RUN chown -R spring:spring /app
+# Phân quyền cho user zenfit
+RUN chown -R zenfit:zenfit /app
 
-# Use non-root user
-USER spring:spring
+USER zenfit:zenfit
 
-# Render thường dùng port 10000
-EXPOSE 10000
+# Mở cổng mặc định (8080 chuẩn Spring/Cloud Run, 10000 cho Render)
+EXPOSE 8080 10000
 
-# Start app
-ENTRYPOINT ["sh", "-c", "java -Xms256m -Xmx512m -Dserver.port=${PORT:-10000} -jar app.jar"]
+# Tối ưu cờ JVM cho container, tự động nhận diện RAM và hỗ trợ biến PORT
+ENV TZ=Asia/Ho_Chi_Minh \
+    SPRING_PROFILES_ACTIVE=prod \
+    JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0"
+
+# Khởi chạy ứng dụng
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=${PORT:-8080} -jar app.jar"]

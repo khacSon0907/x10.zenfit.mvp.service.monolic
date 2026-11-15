@@ -19,5 +19,7 @@ target/
 
 # Ignore local environment variables and tools
 .env
+.env.*
+!.env.example
 mvnw
 mvnw.cmd
