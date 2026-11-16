@@ -8,5 +8,5 @@ server:
         same-site: lax
 
 app:
-  frontend-url: http://localhost:5173
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
   

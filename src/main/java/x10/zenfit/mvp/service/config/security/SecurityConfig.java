@@ -345,8 +345,17 @@ public class SecurityConfig {
     }
 
     private String getFrontendUrl() {
+        String envFrontend = System.getenv("FRONTEND_URL");
+        if (StringUtils.hasText(envFrontend)) {
+            return envFrontend.endsWith("/") ? envFrontend.substring(0, envFrontend.length() - 1) : envFrontend;
+        }
+
         if (StringUtils.hasText(frontendUrl)) {
-            return frontendUrl;
+            String trimmed = frontendUrl.endsWith("/") ? frontendUrl.substring(0, frontendUrl.length() - 1) : frontendUrl;
+            if (System.getenv("RENDER") != null && trimmed.contains("localhost")) {
+                return "https://x10-zenfit-client-react-ts.vercel.app";
+            }
+            return trimmed;
         }
 
         return "https://x10-zenfit-client-react-ts.vercel.app";

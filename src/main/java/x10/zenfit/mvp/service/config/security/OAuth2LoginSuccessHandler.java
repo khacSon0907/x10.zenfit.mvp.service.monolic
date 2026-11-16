@@ -16,6 +16,8 @@ import x10.zenfit.mvp.service.service.authService.oauth2LoginUc.GoogleOauth2Serv
 import x10.zenfit.mvp.service.service.authService.oauth2LoginUc.OAuth2LoginCodeService;
 import x10.zenfit.mvp.service.util.CookieUtil;
 
+import org.springframework.util.StringUtils;
+
 import java.io.IOException;
 
 @Component
@@ -54,7 +56,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         response.setHeader("Cache-Control", "no-store");
         response.setHeader("Pragma", "no-cache");
         invalidateOAuth2Session(request);
-        response.sendRedirect(buildSuccessRedirectUrl(loginResponse));
+        response.sendRedirect(buildSuccessRedirectUrl(request, loginResponse));
     }
 
     private void invalidateOAuth2Session(HttpServletRequest request) {
@@ -65,14 +67,39 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
     }
 
-    private String buildSuccessRedirectUrl(LoginResponse loginResponse) {
+    private String buildSuccessRedirectUrl(HttpServletRequest request, LoginResponse loginResponse) {
         String code = oAuth2LoginCodeService.createCode(loginResponse);
-
-        String base = (frontendUrl != null && frontendUrl.endsWith("/"))
-                ? frontendUrl.substring(0, frontendUrl.length() - 1)
-                : frontendUrl;
+        String base = resolveFrontendUrl(request);
 
         return base + "/oauth2/success"
                 + "?code=" + code;
+    }
+
+    private String resolveFrontendUrl(HttpServletRequest request) {
+        // 1. Ưu tiên biến môi trường FRONTEND_URL
+        String envFrontend = System.getenv("FRONTEND_URL");
+        if (StringUtils.hasText(envFrontend)) {
+            return trimSlash(envFrontend);
+        }
+
+        // 2. Kiểm tra cấu hình app.frontend-url
+        if (StringUtils.hasText(frontendUrl)) {
+            String trimmed = trimSlash(frontendUrl);
+            // Nếu đang chạy trên Render/Cloud mà frontendUrl bị trỏ nhầm về localhost -> tự động chuyển về domain Vercel Production
+            boolean isCloud = (request != null && request.getServerName() != null &&
+                    (request.getServerName().contains("onrender.com") || request.getServerName().contains("render")))
+                    || System.getenv("RENDER") != null;
+            if (isCloud && trimmed.contains("localhost")) {
+                return "https://x10-zenfit-client-react-ts.vercel.app";
+            }
+            return trimmed;
+        }
+
+        return "https://x10-zenfit-client-react-ts.vercel.app";
+    }
+
+    private String trimSlash(String url) {
+        if (url == null) return "";
+        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
     }
 }
