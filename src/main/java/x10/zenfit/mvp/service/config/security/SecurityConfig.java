@@ -29,7 +29,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-    @Value("${app.frontend-url:https://polo-man.vercel.app}")
+    @Value("${app.frontend-url:https://x10-zenfit-client-react-ts.vercel.app}")
     private String frontendUrl;
 
     private static final String[] MANAGEMENT_ROLES = {
@@ -59,7 +59,8 @@ public class SecurityConfig {
 
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "https://polo-man.vercel.app"
+                "http://localhost:3000",
+                "https://x10-zenfit-client-react-ts.vercel.app"
         ));
 
         config.setAllowedMethods(List.of(
@@ -348,6 +349,6 @@ public class SecurityConfig {
             return frontendUrl;
         }
 
-        return "https://polo-man.vercel.app";
+        return "https://x10-zenfit-client-react-ts.vercel.app";
     }
 }

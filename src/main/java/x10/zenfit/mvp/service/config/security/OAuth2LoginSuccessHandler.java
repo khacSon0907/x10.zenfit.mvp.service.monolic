@@ -28,7 +28,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final OAuth2LoginCodeService oAuth2LoginCodeService;
     private final JwtProperties jwtProperties;
 
-    @Value("${app.frontend-url:https://polo-man.vercel.app}")
+    @Value("${app.frontend-url:https://x10-zenfit-client-react-ts.vercel.app}")
     private String frontendUrl;
 
     @Override
@@ -68,7 +68,11 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private String buildSuccessRedirectUrl(LoginResponse loginResponse) {
         String code = oAuth2LoginCodeService.createCode(loginResponse);
 
-        return frontendUrl + "/oauth2/success"
+        String base = (frontendUrl != null && frontendUrl.endsWith("/"))
+                ? frontendUrl.substring(0, frontendUrl.length() - 1)
+                : frontendUrl;
+
+        return base + "/oauth2/success"
                 + "?code=" + code;
     }
 }

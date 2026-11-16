@@ -7,4 +7,4 @@ server:
         same-site: none
 
 app:
-  frontend-url: ${FRONTEND_URL:https://x10-zenfit-client-react-ts.vercel.app/}
+  frontend-url: ${FRONTEND_URL:https://x10-zenfit-client-react-ts.vercel.app}
