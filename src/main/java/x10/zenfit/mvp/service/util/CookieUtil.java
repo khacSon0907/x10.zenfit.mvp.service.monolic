@@ -11,19 +11,27 @@ import org.springframework.stereotype.Component;
 @Component
 public class CookieUtil {
 
-    // Giá trị mặc định an toàn cho môi trường dev/test khi Spring chưa inject
-    private static boolean secure = false;
-    private static String sameSite = "Lax";
+    // Mặc định hỗ trợ cross-site cookie an toàn khi chạy trên cloud/production
+    private static boolean secure = (System.getenv("RENDER") != null);
+    private static String sameSite = (System.getenv("RENDER") != null) ? "None" : "Lax";
 
     // Spring inject giá trị từ application.yml (app.cookie.*) khi khởi động
-    @Value("${app.cookie.secure:false}")
-    public void setSecure(boolean secure) {
-        CookieUtil.secure = secure;
+    @Value("${app.cookie.secure:#{null}}")
+    public void setSecure(Boolean secure) {
+        if (secure != null) {
+            CookieUtil.secure = secure;
+        } else if (System.getenv("RENDER") != null) {
+            CookieUtil.secure = true;
+        }
     }
 
-    @Value("${app.cookie.same-site:Lax}")
+    @Value("${app.cookie.same-site:#{null}}")
     public void setSameSite(String sameSite) {
-        CookieUtil.sameSite = sameSite;
+        if (sameSite != null && !sameSite.trim().isEmpty()) {
+            CookieUtil.sameSite = sameSite;
+        } else if (System.getenv("RENDER") != null) {
+            CookieUtil.sameSite = "None";
+        }
     }
 
     public static void addCookie(

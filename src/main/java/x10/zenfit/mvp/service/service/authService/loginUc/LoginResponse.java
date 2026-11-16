@@ -19,7 +19,5 @@ public class LoginResponse {
     private List<String> roleIds;
     private List<String> roles;
     private String accessToken;
-
-    @JsonIgnore
     private String refreshToken;
 }
