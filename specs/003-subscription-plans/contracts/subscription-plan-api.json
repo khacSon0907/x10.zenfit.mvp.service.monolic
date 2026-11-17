@@ -1,0 +1,580 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ZenFit Subscription Plan Management API",
+    "description": "API phục vụ quản lý cấu hình các gói dịch vụ (Subscription Plans) và hạn mức học viên cho Huấn luyện viên (PT) và Quản lý trên hệ thống ZenFit.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/api/subscription-plans": {
+      "get": {
+        "summary": "Lấy danh sách các gói dịch vụ đang hoạt động (ACTIVE)",
+        "description": "Dành cho PT hoặc học viên xem danh sách các gói dịch vụ có sẵn để đăng ký hoặc nâng cấp. Được sắp xếp theo displayOrder tăng dần.",
+        "operationId": "getActiveSubscriptionPlans",
+        "responses": {
+          "200": {
+            "description": "Danh sách gói dịch vụ đang hoạt động",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListSubscriptionPlanResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Tạo mới một gói dịch vụ (Chỉ ADMIN)",
+        "description": "Chỉ dành cho Quản trị viên (ROLE_ADMIN) để thiết lập gói dịch vụ mới.",
+        "operationId": "createSubscriptionPlan",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubscriptionPlanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tạo gói dịch vụ thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSubscriptionPlanResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu đầu vào không hợp lệ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Mã code của gói đã tồn tại",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/subscription-plans/default": {
+      "get": {
+        "summary": "Lấy thông tin gói mặc định miễn phí hiện tại",
+        "description": "Trả về gói có isDefault = true được hệ thống dùng để gán cho PT khi mới tạo tài khoản.",
+        "operationId": "getDefaultSubscriptionPlan",
+        "responses": {
+          "200": {
+            "description": "Thông tin gói mặc định",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSubscriptionPlanResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Chưa có gói mặc định nào được cấu hình"
+          }
+        }
+      }
+    },
+    "/api/subscription-plans/admin": {
+      "get": {
+        "summary": "Quản trị viên lấy danh sách phân trang và lọc gói dịch vụ (Chỉ ADMIN)",
+        "description": "Hỗ trợ phân trang, lọc theo status (ACTIVE, INACTIVE, ARCHIVED), tìm kiếm theo từ khóa.",
+        "operationId": "getAdminSubscriptionPlans",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Từ khóa tìm kiếm theo tên hoặc mã code"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["ACTIVE", "INACTIVE", "ARCHIVED"]
+            },
+            "description": "Lọc theo trạng thái"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Số trang (bắt đầu từ 0)"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Số bản ghi mỗi trang"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách phân trang gói dịch vụ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePaginatedSubscriptionPlan"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/subscription-plans/{id}": {
+      "get": {
+        "summary": "Xem chi tiết một gói dịch vụ",
+        "operationId": "getSubscriptionPlanById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID của gói dịch vụ"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chi tiết gói dịch vụ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSubscriptionPlanResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy gói dịch vụ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Cập nhật thông tin gói dịch vụ (Chỉ ADMIN)",
+        "operationId": "updateSubscriptionPlan",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubscriptionPlanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật gói thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSubscriptionPlanResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy gói dịch vụ"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Xóa gói dịch vụ (Chỉ ADMIN)",
+        "operationId": "deleteSubscriptionPlan",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xóa thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Không thể xóa gói mặc định"
+          },
+          "404": {
+            "description": "Không tìm thấy gói dịch vụ"
+          }
+        }
+      }
+    },
+    "/api/subscription-plans/{id}/status": {
+      "patch": {
+        "summary": "Đổi trạng thái gói dịch vụ (Chỉ ADMIN)",
+        "operationId": "updateSubscriptionPlanStatus",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubscriptionPlanStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Đổi trạng thái thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSubscriptionPlanResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "CreateSubscriptionPlanRequest": {
+        "type": "object",
+        "required": ["code", "name", "price", "durationDays", "maxStudents"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "FREE_PT"
+          },
+          "name": {
+            "type": "string",
+            "example": "Gói Miễn Phí Khởi Nghiệp"
+          },
+          "description": {
+            "type": "string",
+            "example": "Dành cho PT mới tham gia ZenFit, tối đa 5 học viên"
+          },
+          "price": {
+            "type": "number",
+            "example": 0
+          },
+          "durationDays": {
+            "type": "integer",
+            "example": 365
+          },
+          "maxStudents": {
+            "type": "integer",
+            "example": 5
+          },
+          "maxTrainingSessions": {
+            "type": "integer",
+            "example": 0
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "INACTIVE", "ARCHIVED"],
+            "default": "ACTIVE"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "default": false
+          },
+          "displayOrder": {
+            "type": "integer",
+            "default": 0
+          }
+        }
+      },
+      "UpdateSubscriptionPlanRequest": {
+        "type": "object",
+        "required": ["name", "price", "durationDays", "maxStudents"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Gói PT Chuyên Nghiệp"
+          },
+          "description": {
+            "type": "string",
+            "example": "Quản lý tối đa 50 học viên"
+          },
+          "price": {
+            "type": "number",
+            "example": 199000
+          },
+          "durationDays": {
+            "type": "integer",
+            "example": 30
+          },
+          "maxStudents": {
+            "type": "integer",
+            "example": 50
+          },
+          "maxTrainingSessions": {
+            "type": "integer",
+            "example": 100
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "displayOrder": {
+            "type": "integer"
+          }
+        }
+      },
+      "UpdateSubscriptionPlanStatusRequest": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "INACTIVE", "ARCHIVED"]
+          }
+        }
+      },
+      "SubscriptionPlanResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "durationDays": {
+            "type": "integer"
+          },
+          "maxStudents": {
+            "type": "integer"
+          },
+          "maxTrainingSessions": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "INACTIVE", "ARCHIVED"]
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "displayOrder": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApiResponseSubscriptionPlanResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SubscriptionPlanResponse"
+          }
+        }
+      },
+      "ApiResponseListSubscriptionPlanResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubscriptionPlanResponse"
+            }
+          }
+        }
+      },
+      "ApiResponsePaginatedSubscriptionPlan": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SubscriptionPlanResponse"
+                }
+              },
+              "currentPage": {
+                "type": "integer"
+              },
+              "totalPages": {
+                "type": "integer"
+              },
+              "totalItems": {
+                "type": "integer"
+              },
+              "pageSize": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "ApiResponseVoid": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiResponseError": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ERROR"
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

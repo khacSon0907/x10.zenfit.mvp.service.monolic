@@ -323,6 +323,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/trainer-tasks", "/api/trainer-tasks/**")
                         .hasAnyRole("ADMIN", "HEAD_OF_TRAINING", "TEAM_MANAGER", "PT", "STAFF")
 
+                        // Subscription Plan APIs
+                        .requestMatchers(HttpMethod.POST, "/api/subscription-plans").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/subscription-plans/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/subscription-plans/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/subscription-plans/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/subscription-plans/admin").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/subscription-plans", "/api/subscription-plans/**").authenticated()
+
                         // Image Signature API
                         .requestMatchers("/api/images/**")
                         .authenticated()
