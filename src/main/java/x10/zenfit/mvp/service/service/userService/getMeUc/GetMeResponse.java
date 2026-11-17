@@ -50,6 +50,8 @@ public class GetMeResponse {
 
     private boolean canUpdateBirthday;
 
+    private boolean subscriptionConfirmed;
+
     private AuthProvider providerType;
 
     // ROLE

@@ -44,6 +44,8 @@ public class UserEntity {
 
     private boolean emailVerified;
 
+    private boolean subscriptionConfirmed;
+
     private LocalDateTime verifiedAt;
 
     private List<String> roleIds;

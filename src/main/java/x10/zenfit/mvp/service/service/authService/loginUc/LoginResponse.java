@@ -16,6 +16,7 @@ public class LoginResponse {
     private String id;
     private String username;
     private String email;
+    private boolean subscriptionConfirmed;
     private List<String> roleIds;
     private List<String> roles;
     private String accessToken;

@@ -37,6 +37,7 @@ public class GetMeUcImpl implements IGetMeUc {
                 .birthdayLastUpdatedAt(user.getBirthdayLastUpdatedAt())
                 .nextBirthdayUpdateAt(nextBirthdayUpdateAt(user))
                 .canUpdateBirthday(canUpdateBirthday(user))
+                .subscriptionConfirmed(user.isSubscriptionConfirmed())
                 .providerType(user.getProviderType())
                 .roleIds(user.getRoleIds())
                 .build();

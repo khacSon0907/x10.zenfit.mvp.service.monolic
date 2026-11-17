@@ -331,6 +331,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/subscription-plans/admin").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/subscription-plans", "/api/subscription-plans/**").authenticated()
 
+                        // User Subscription APIs
+                        .requestMatchers(HttpMethod.GET, "/api/user-subscriptions/admin", "/api/user-subscriptions/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/user-subscriptions/*/status").hasRole("ADMIN")
+                        .requestMatchers("/api/user-subscriptions", "/api/user-subscriptions/**").authenticated()
+
                         // Image Signature API
                         .requestMatchers("/api/images/**")
                         .authenticated()

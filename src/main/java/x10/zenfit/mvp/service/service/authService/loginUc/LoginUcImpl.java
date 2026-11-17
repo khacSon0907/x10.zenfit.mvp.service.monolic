@@ -103,6 +103,7 @@ public class LoginUcImpl implements ILoginUc {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .subscriptionConfirmed(user.isSubscriptionConfirmed())
                 .roleIds(roleIds)
                 .roles(roles)
                 .accessToken(accessToken)

@@ -41,6 +41,8 @@ public class UserDocument {
 
     private boolean emailVerified;
 
+    private boolean subscriptionConfirmed;
+
     private LocalDateTime verifiedAt;
 
     private String avatarUrl;
