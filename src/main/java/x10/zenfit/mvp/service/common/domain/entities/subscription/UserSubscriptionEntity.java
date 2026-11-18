@@ -53,6 +53,11 @@ public class UserSubscriptionEntity {
     // ID giao dịch thanh toán
     private String transactionId;
 
+    // Thông tin thanh toán PayOS
+    private Long payosOrderCode;
+    private String checkoutUrl;
+    private String qrCode;
+
     // Thời gian tạo và cập nhật
     private Instant createdAt;
     private Instant updatedAt;

@@ -36,6 +36,10 @@ public class UserSubscriptionResponse {
     private Instant paidAt;
     private String transactionId;
 
+    private Long payosOrderCode;
+    private String checkoutUrl;
+    private String qrCode;
+
     private boolean isExpired;
     private Long daysRemaining;
 
@@ -70,6 +74,9 @@ public class UserSubscriptionResponse {
                 .autoRenew(entity.getAutoRenew())
                 .paidAt(entity.getPaidAt())
                 .transactionId(entity.getTransactionId())
+                .payosOrderCode(entity.getPayosOrderCode())
+                .checkoutUrl(entity.getCheckoutUrl())
+                .qrCode(entity.getQrCode())
                 .isExpired(expired)
                 .daysRemaining(days)
                 .createdAt(entity.getCreatedAt())

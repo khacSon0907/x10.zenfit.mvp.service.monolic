@@ -56,6 +56,16 @@ public class UserSubscriptionRepositoryImpl implements IUserSubscriptionReposito
     }
 
     @Override
+    public Optional<UserSubscriptionEntity> findByPayosOrderCode(Long payosOrderCode) {
+        if (payosOrderCode == null) {
+            return Optional.empty();
+        }
+
+        return mongoRepository.findByPayosOrderCode(payosOrderCode)
+                .map(UserSubscriptionMapper::toEntity);
+    }
+
+    @Override
     public List<UserSubscriptionEntity> findByUserIdOrderByCreatedAtDesc(String userId) {
         if (userId == null || userId.isBlank()) {
             return List.of();

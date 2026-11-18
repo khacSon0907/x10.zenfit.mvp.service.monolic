@@ -42,6 +42,11 @@ public class UserSubscriptionDocument {
     private Instant paidAt;
     private String transactionId;
 
+    @Indexed
+    private Long payosOrderCode;
+    private String checkoutUrl;
+    private String qrCode;
+
     private Instant createdAt;
     private Instant updatedAt;
 }

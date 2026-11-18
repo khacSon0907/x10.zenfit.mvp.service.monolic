@@ -4,10 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import x10.zenfit.mvp.service.Repository.IOrderRepository;
 import x10.zenfit.mvp.service.Repository.IPaymentRepository;
+import x10.zenfit.mvp.service.Repository.ISubscriptionPlanRepository;
+import x10.zenfit.mvp.service.Repository.IUserSubscriptionRepository;
 import x10.zenfit.mvp.service.common.domain.entities.order.OrderEntity;
 import x10.zenfit.mvp.service.common.domain.entities.order.PaymentEntity;
+import x10.zenfit.mvp.service.common.domain.entities.subscription.SubscriptionPlanEntity;
+import x10.zenfit.mvp.service.common.domain.entities.subscription.UserSubscriptionEntity;
 import x10.zenfit.mvp.service.common.domain.enums.PaymentStatus;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -17,16 +22,58 @@ public class CreatePaymentLinkUcImpl implements ICreatePaymentLinkUc {
 
     private final IOrderRepository orderRepository;
     private final IPaymentRepository paymentRepository;
+    private final IUserSubscriptionRepository userSubscriptionRepository;
+    private final ISubscriptionPlanRepository subscriptionPlanRepository;
     private final PayOSService payOSService;
 
     @Override
     public CreatePaymentLinkResponse createPaymentLink(
             CreatePaymentLinkRequest request
     ) {
+        if (request == null) {
+            throw new IllegalArgumentException("Request cannot be null");
+        }
 
+        // 1. Nếu request thanh toán cho UserSubscription
+        if (request.getSubscriptionId() != null && !request.getSubscriptionId().isBlank()) {
+            UserSubscriptionEntity subscription = userSubscriptionRepository.findById(request.getSubscriptionId().trim())
+                    .orElseThrow(() -> new RuntimeException("Subscription not found: " + request.getSubscriptionId()));
+
+            SubscriptionPlanEntity plan = subscriptionPlanRepository.findById(subscription.getPlanId())
+                    .orElseThrow(() -> new RuntimeException("Subscription plan not found: " + subscription.getPlanId()));
+
+            Long orderCode = System.currentTimeMillis();
+            String desc = ("DK " + plan.getCode()).replaceAll("[^a-zA-Z0-9 ]", "");
+            if (desc.length() > 25) {
+                desc = desc.substring(0, 25);
+            }
+
+            vn.payos.model.v2.paymentRequests.CreatePaymentLinkResponse payOSResponse =
+                    payOSService.createPaymentLink(
+                            orderCode,
+                            plan.getPrice().longValue(),
+                            desc
+                    );
+
+            subscription.setPayosOrderCode(orderCode);
+            subscription.setCheckoutUrl(payOSResponse.getCheckoutUrl());
+            subscription.setQrCode(payOSResponse.getQrCode());
+            subscription.setUpdatedAt(Instant.now());
+            userSubscriptionRepository.save(subscription);
+
+            return CreatePaymentLinkResponse.builder()
+                    .orderId(subscription.getId())
+                    .orderCode(orderCode)
+                    .paymentLinkId(payOSResponse.getPaymentLinkId())
+                    .amount(plan.getPrice())
+                    .checkoutUrl(payOSResponse.getCheckoutUrl())
+                    .qrCode(payOSResponse.getQrCode())
+                    .build();
+        }
+
+        // 2. Nếu request thanh toán cho Order bán hàng
         OrderEntity order = orderRepository.findById(request.getOrderId())
-                .orElseThrow(() ->
-                        new RuntimeException("Order not found"));
+                .orElseThrow(() -> new RuntimeException("Order not found: " + request.getOrderId()));
 
         Long orderCode = System.currentTimeMillis();
 

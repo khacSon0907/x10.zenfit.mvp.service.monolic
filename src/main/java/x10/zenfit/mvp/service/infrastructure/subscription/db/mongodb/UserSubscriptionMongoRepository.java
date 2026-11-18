@@ -17,6 +17,8 @@ public interface UserSubscriptionMongoRepository extends MongoRepository<UserSub
 
     List<UserSubscriptionDocument> findByUserIdOrderByCreatedAtDesc(String userId);
 
+    Optional<UserSubscriptionDocument> findByPayosOrderCode(Long payosOrderCode);
+
     boolean existsByUserIdAndStatus(String userId, UserSubscriptionStatus status);
 }
 

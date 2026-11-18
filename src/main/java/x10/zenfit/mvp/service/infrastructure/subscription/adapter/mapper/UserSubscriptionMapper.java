@@ -26,6 +26,9 @@ public final class UserSubscriptionMapper {
                 .autoRenew(entity.getAutoRenew())
                 .paidAt(entity.getPaidAt())
                 .transactionId(entity.getTransactionId())
+                .payosOrderCode(entity.getPayosOrderCode())
+                .checkoutUrl(entity.getCheckoutUrl())
+                .qrCode(entity.getQrCode())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -49,6 +52,9 @@ public final class UserSubscriptionMapper {
                 .autoRenew(doc.getAutoRenew())
                 .paidAt(doc.getPaidAt())
                 .transactionId(doc.getTransactionId())
+                .payosOrderCode(doc.getPayosOrderCode())
+                .checkoutUrl(doc.getCheckoutUrl())
+                .qrCode(doc.getQrCode())
                 .createdAt(doc.getCreatedAt())
                 .updatedAt(doc.getUpdatedAt())
                 .build();

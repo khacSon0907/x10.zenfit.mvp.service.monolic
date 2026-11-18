@@ -14,6 +14,8 @@ public interface IUserSubscriptionRepository {
 
     Optional<UserSubscriptionEntity> findActiveSubscriptionByUserId(String userId);
 
+    Optional<UserSubscriptionEntity> findByPayosOrderCode(Long payosOrderCode);
+
     List<UserSubscriptionEntity> findByUserIdOrderByCreatedAtDesc(String userId);
 
     PaginatedResult<UserSubscriptionEntity> findSubscriptions(
