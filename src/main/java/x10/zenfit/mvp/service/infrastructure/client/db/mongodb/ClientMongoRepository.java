@@ -24,4 +24,6 @@ public interface ClientMongoRepository extends MongoRepository<ClientDocument, S
     List<ClientDocument> findByFullNameIgnoreCase(String fullName);
 
     List<ClientDocument> findByFullNameContainingIgnoreCaseAndAssignedTrainerId(String fullName, String assignedTrainerId);
+
+    long countByAssignedTrainerId(String assignedTrainerId);
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import vn.payos.PayOS;
 import vn.payos.model.webhooks.Webhook;
 import vn.payos.model.webhooks.WebhookData;
+import x10.zenfit.mvp.service.Repository.IClientRepository;
 import x10.zenfit.mvp.service.Repository.IOrderRepository;
 import x10.zenfit.mvp.service.Repository.IPaymentRepository;
 import x10.zenfit.mvp.service.Repository.IUserRepository;
@@ -32,6 +33,7 @@ public class PaymentWebhookService {
     private final IPaymentRepository paymentRepository;
     private final IUserSubscriptionRepository userSubscriptionRepository;
     private final IUserRepository userRepository;
+    private final IClientRepository clientRepository;
     private final OrderInventoryService orderInventoryService;
     private final SimpMessagingTemplate messagingTemplate;
     private final PayOS payOS;
@@ -111,7 +113,22 @@ public class PaymentWebhookService {
 
         // Thanh toán thành công và đủ số tiền
         Instant now = Instant.now();
+
+        // Chuyển gói cũ sang EXPIRED (nếu có gói active khác của user này)
+        userSubscriptionRepository.findActiveSubscriptionByUserId(userId).ifPresent(oldSub -> {
+            if (!oldSub.getId().equals(subscription.getId())) {
+                oldSub.setStatus(UserSubscriptionStatus.EXPIRED);
+                oldSub.setUpdatedAt(now);
+                userSubscriptionRepository.save(oldSub);
+                log.info("Old subscription {} expired after upgrade to new subscription {}", oldSub.getId(), subscription.getId());
+            }
+        });
+
+        // Đồng bộ số học viên thực tế hiện tại
+        long realStudents = clientRepository.countByAssignedTrainerId(userId);
+
         subscription.setStatus(UserSubscriptionStatus.ACTIVE);
+        subscription.setCurrentStudents((int) realStudents);
         subscription.setPaidAt(now);
         subscription.setTransactionId(data.getReference() != null ? data.getReference() : String.valueOf(payosOrderCode));
         subscription.setUpdatedAt(now);

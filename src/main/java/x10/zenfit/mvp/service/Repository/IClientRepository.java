@@ -38,5 +38,7 @@ public interface IClientRepository {
 
     List<ClientEntity> findByFullName(String fullName);
 
+    long countByAssignedTrainerId(String assignedTrainerId);
+
     void deleteById(String id);
 }

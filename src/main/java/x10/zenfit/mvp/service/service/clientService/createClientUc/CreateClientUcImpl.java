@@ -1,23 +1,29 @@
 package x10.zenfit.mvp.service.service.clientService.createClientUc;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import x10.zenfit.mvp.service.Repository.IClientRepository;
+import x10.zenfit.mvp.service.Repository.IUserSubscriptionRepository;
 import x10.zenfit.mvp.service.common.domain.entities.client.ClientEntity;
+import x10.zenfit.mvp.service.common.domain.entities.subscription.UserSubscriptionEntity;
 import x10.zenfit.mvp.service.common.domain.enums.ClientStatus;
 import x10.zenfit.mvp.service.service.clientService.ClientResponse;
 import x10.zenfit.mvp.service.service.clientService.ClientResponseMapper;
 import x10.zenfit.mvp.service.share.exception.BusinessException;
 import x10.zenfit.mvp.service.share.exception.client.ClientError;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class CreateClientUcImpl implements ICreateClientUc {
 
     private final IClientRepository clientRepository;
+    private final IUserSubscriptionRepository userSubscriptionRepository;
 
     @Override
     public ClientResponse createClient(CreateClientRequest request) {
@@ -36,6 +42,29 @@ public class CreateClientUcImpl implements ICreateClientUc {
         if (request.getEmail() != null && !request.getEmail().isBlank()) {
             if (clientRepository.existsByEmail(request.getEmail().trim().toLowerCase())) {
                 throw new BusinessException(ClientError.CLIENT_EMAIL_ALREADY_EXISTS);
+            }
+        }
+
+        // Kiểm tra giới hạn học viên theo gói dịch vụ (UserSubscription) của PT
+        String trainerId = request.getAssignedTrainerId();
+        UserSubscriptionEntity activeSubscription = null;
+        if (trainerId != null && !trainerId.isBlank()) {
+            activeSubscription = userSubscriptionRepository.findActiveSubscriptionByUserId(trainerId.trim())
+                    .orElseThrow(() -> new BusinessException(ClientError.SUBSCRIPTION_REQUIRED));
+
+            // Kiểm tra gói đã hết hạn hay chưa
+            if (activeSubscription.getEndAt() != null && activeSubscription.getEndAt().isBefore(Instant.now())) {
+                log.warn("Subscription for trainer {} has expired at {}", trainerId, activeSubscription.getEndAt());
+                throw new BusinessException(ClientError.SUBSCRIPTION_REQUIRED);
+            }
+
+            Integer maxStudents = activeSubscription.getMaxStudents();
+            if (maxStudents != null && maxStudents > 0) {
+                long currentCount = clientRepository.countByAssignedTrainerId(trainerId.trim());
+                if (currentCount >= maxStudents) {
+                    log.warn("Trainer {} exceeded maxStudents quota ({}/{})", trainerId, currentCount, maxStudents);
+                    throw new BusinessException(ClientError.STUDENT_LIMIT_EXCEEDED);
+                }
             }
         }
 
@@ -62,6 +91,15 @@ public class CreateClientUcImpl implements ICreateClientUc {
                 .build();
 
         ClientEntity saved = clientRepository.save(entity);
+
+        // Cập nhật số học viên hiện tại trong subscription của PT
+        if (activeSubscription != null && trainerId != null) {
+            long newCount = clientRepository.countByAssignedTrainerId(trainerId.trim());
+            activeSubscription.setCurrentStudents((int) newCount);
+            activeSubscription.setUpdatedAt(Instant.now());
+            userSubscriptionRepository.save(activeSubscription);
+        }
+
         return ClientResponseMapper.toResponse(saved);
     }
 }

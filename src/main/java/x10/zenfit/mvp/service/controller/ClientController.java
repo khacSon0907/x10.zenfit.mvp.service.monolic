@@ -37,6 +37,10 @@ public class ClientController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<ClientResponse> createClient(@Valid @RequestBody CreateClientRequest request) {
+        String currentUserId = getCurrentUserId();
+        if (request.getAssignedTrainerId() == null || request.getAssignedTrainerId().isBlank()) {
+            request.setAssignedTrainerId(currentUserId);
+        }
         ClientResponse response = coreClientService.createClient(request);
         return ApiResponse.created(
                 "CLIENT.CREATE_SUCCESS",

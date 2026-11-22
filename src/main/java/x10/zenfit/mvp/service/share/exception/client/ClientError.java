@@ -30,6 +30,20 @@ public enum ClientError implements ErrorDescriptor {
             400,
             "CLIENT.INVALID_DATA",
             "Dữ liệu khách hàng không hợp lệ"
+    ),
+
+    STUDENT_LIMIT_EXCEEDED(
+            "BUSINESS",
+            400,
+            "CLIENT.STUDENT_LIMIT_EXCEEDED",
+            "Số lượng khách hàng đã đạt giới hạn tối đa của gói dịch vụ. Vui lòng nâng cấp gói để tiếp tục thêm khách hàng."
+    ),
+
+    SUBSCRIPTION_REQUIRED(
+            "BUSINESS",
+            403,
+            "CLIENT.SUBSCRIPTION_REQUIRED",
+            "Bạn chưa đăng ký gói dịch vụ hoặc gói dịch vụ đã hết hạn. Vui lòng chọn hoặc gia hạn gói để thêm khách hàng."
     );
 
     private final String type;

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import x10.zenfit.mvp.service.Repository.IClientRepository;
 import x10.zenfit.mvp.service.Repository.ISubscriptionPlanRepository;
 import x10.zenfit.mvp.service.Repository.IUserRepository;
 import x10.zenfit.mvp.service.Repository.IUserSubscriptionRepository;
@@ -31,6 +32,7 @@ public class SelectPlanUcImpl implements ISelectPlanUc {
     private final IUserSubscriptionRepository userSubscriptionRepository;
     private final ISubscriptionPlanRepository subscriptionPlanRepository;
     private final IUserRepository userRepository;
+    private final IClientRepository clientRepository;
     private final PayOSService payOSService;
 
     @Override
@@ -64,10 +66,6 @@ public class SelectPlanUcImpl implements ISelectPlanUc {
             if (activeSub.getPlanId().equals(plan.getId()) && activeSub.getEndAt() != null && activeSub.getEndAt().isAfter(now)) {
                 throw new BusinessException(UserSubscriptionError.ALREADY_HAS_ACTIVE_SUBSCRIPTION);
             }
-            // Nếu đổi sang gói mới, chuyển gói cũ sang EXPIRED
-            activeSub.setStatus(UserSubscriptionStatus.EXPIRED);
-            activeSub.setUpdatedAt(now);
-            userSubscriptionRepository.save(activeSub);
         }
 
         int durationDays = (plan.getDurationDays() != null && plan.getDurationDays() > 0)
@@ -77,6 +75,14 @@ public class SelectPlanUcImpl implements ISelectPlanUc {
         Instant endAt = now.plus(Duration.ofDays(durationDays));
         BigDecimal price = plan.getPrice() != null ? plan.getPrice() : BigDecimal.ZERO;
         boolean isFree = price.compareTo(BigDecimal.ZERO) == 0 || Boolean.TRUE.equals(plan.getIsDefault());
+
+        // Nếu là gói Free thì chuyển gói cũ sang EXPIRED ngay lập tức
+        if (isFree && activeSubOpt.isPresent()) {
+            UserSubscriptionEntity activeSub = activeSubOpt.get();
+            activeSub.setStatus(UserSubscriptionStatus.EXPIRED);
+            activeSub.setUpdatedAt(now);
+            userSubscriptionRepository.save(activeSub);
+        }
 
         Long orderCode = System.currentTimeMillis();
         String checkoutUrl = null;
@@ -100,6 +106,9 @@ public class SelectPlanUcImpl implements ISelectPlanUc {
             }
         }
 
+        // Lấy số lượng học viên hiện tại mà PT đang phụ trách
+        long currentStudents = clientRepository.countByAssignedTrainerId(user.getId());
+
         UserSubscriptionEntity subscription = UserSubscriptionEntity.builder()
                 .userId(user.getId())
                 .planId(plan.getId())
@@ -108,7 +117,7 @@ public class SelectPlanUcImpl implements ISelectPlanUc {
                 .endAt(endAt)
                 .price(price)
                 .maxStudents(plan.getMaxStudents())
-                .currentStudents(0)
+                .currentStudents((int) currentStudents)
                 .autoRenew(Boolean.TRUE.equals(request.getAutoRenew()))
                 .paidAt(isFree ? now : null)
                 .transactionId(isFree ? "FREE_TIER" : null)

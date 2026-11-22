@@ -200,6 +200,14 @@ public class ClientRepositoryImpl implements IClientRepository {
     }
 
     @Override
+    public long countByAssignedTrainerId(String assignedTrainerId) {
+        if (assignedTrainerId == null || assignedTrainerId.isBlank()) {
+            return 0L;
+        }
+        return clientMongoRepository.countByAssignedTrainerId(assignedTrainerId.trim());
+    }
+
+    @Override
     public void deleteById(String id) {
         clientMongoRepository.deleteById(id);
     }

@@ -2,6 +2,7 @@ package x10.zenfit.mvp.service.service.userSubscriptionService.getMySubscription
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import x10.zenfit.mvp.service.Repository.IClientRepository;
 import x10.zenfit.mvp.service.Repository.ISubscriptionPlanRepository;
 import x10.zenfit.mvp.service.Repository.IUserSubscriptionRepository;
 import x10.zenfit.mvp.service.common.domain.entities.subscription.SubscriptionPlanEntity;
@@ -17,6 +18,7 @@ public class GetMySubscriptionUcImpl implements IGetMySubscriptionUc {
 
     private final IUserSubscriptionRepository userSubscriptionRepository;
     private final ISubscriptionPlanRepository subscriptionPlanRepository;
+    private final IClientRepository clientRepository;
 
     @Override
     public UserSubscriptionResponse execute(String userId) {
@@ -30,7 +32,10 @@ public class GetMySubscriptionUcImpl implements IGetMySubscriptionUc {
         SubscriptionPlanEntity plan = subscriptionPlanRepository.findById(subscription.getPlanId())
                 .orElse(null);
 
+        // Đồng bộ số học viên thực tế đang quản lý
+        long realStudents = clientRepository.countByAssignedTrainerId(userId.trim());
+        subscription.setCurrentStudents((int) realStudents);
+
         return UserSubscriptionResponse.fromEntity(subscription, plan);
     }
 }
-
