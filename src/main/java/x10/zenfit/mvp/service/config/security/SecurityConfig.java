@@ -323,6 +323,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/trainer-tasks", "/api/trainer-tasks/**")
                         .hasAnyRole("ADMIN", "HEAD_OF_TRAINING", "TEAM_MANAGER", "PT", "STAFF")
 
+                        // Nutrition Plan APIs
+                        .requestMatchers("/api/v1/nutrition-plans", "/api/v1/nutrition-plans/**")
+                        .hasAnyRole("ADMIN", "HEAD_OF_TRAINING", "TEAM_MANAGER", "PT", "STAFF")
+
                         // Subscription Plan APIs
                         .requestMatchers(HttpMethod.POST, "/api/subscription-plans").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/subscription-plans/**").hasRole("ADMIN")
