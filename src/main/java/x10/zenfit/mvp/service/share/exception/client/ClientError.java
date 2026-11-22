@@ -44,6 +44,13 @@ public enum ClientError implements ErrorDescriptor {
             403,
             "CLIENT.SUBSCRIPTION_REQUIRED",
             "Bạn chưa đăng ký gói dịch vụ hoặc gói dịch vụ đã hết hạn. Vui lòng chọn hoặc gia hạn gói để thêm khách hàng."
+    ),
+
+    ACCESS_DENIED(
+            "BUSINESS",
+            403,
+            "CLIENT.ACCESS_DENIED",
+            "Bạn không có quyền thao tác trên thông tin khách hàng này"
     );
 
     private final String type;

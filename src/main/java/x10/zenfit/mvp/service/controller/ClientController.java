@@ -4,17 +4,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import x10.zenfit.mvp.service.common.domain.enums.ClientStatus;
 import x10.zenfit.mvp.service.service.clientService.ClientResponse;
@@ -23,14 +15,19 @@ import x10.zenfit.mvp.service.service.clientService.createClientUc.CreateClientR
 import x10.zenfit.mvp.service.service.clientService.getPtClientsUc.GetPtClientsQuery;
 import x10.zenfit.mvp.service.service.clientService.getPtClientsUc.PaginatedClientResponse;
 import x10.zenfit.mvp.service.service.clientService.updateClientUc.UpdateClientRequest;
+import x10.zenfit.mvp.service.share.exception.BusinessException;
+import x10.zenfit.mvp.service.share.exception.client.ClientError;
 import x10.zenfit.mvp.service.share.response.ApiResponse;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/clients")
 @RequiredArgsConstructor
 public class ClientController {
+
+    private static final Set<String> MANAGEMENT_ROLES = Set.of("ROLE_ADMIN", "ROLE_HEAD_OF_TRAINING", "ROLE_TEAM_MANAGER");
 
     private final ICoreClientService coreClientService;
 
@@ -38,9 +35,13 @@ public class ClientController {
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<ClientResponse> createClient(@Valid @RequestBody CreateClientRequest request) {
         String currentUserId = getCurrentUserId();
-        if (request.getAssignedTrainerId() == null || request.getAssignedTrainerId().isBlank()) {
+        boolean isManagement = isManagementUser();
+
+        // PT thường chỉ được tạo khách hàng cho chính mình
+        if (!isManagement || request.getAssignedTrainerId() == null || request.getAssignedTrainerId().isBlank()) {
             request.setAssignedTrainerId(currentUserId);
         }
+
         ClientResponse response = coreClientService.createClient(request);
         return ApiResponse.created(
                 "CLIENT.CREATE_SUCCESS",
@@ -80,7 +81,16 @@ public class ClientController {
 
     @GetMapping("/{id}")
     public ApiResponse<ClientResponse> getClientById(@PathVariable String id) {
+        String currentUserId = getCurrentUserId();
+        boolean isManagement = isManagementUser();
+
         ClientResponse response = coreClientService.getClientById(id);
+
+        // PT thường chỉ được xem chi tiết khách hàng của chính mình
+        if (!isManagement && (response.getAssignedTrainerId() == null || !response.getAssignedTrainerId().equals(currentUserId))) {
+            throw new BusinessException(ClientError.ACCESS_DENIED);
+        }
+
         return ApiResponse.ok(
                 "CLIENT.GET_DETAIL_SUCCESS",
                 "Lấy thông tin chi tiết khách hàng thành công",
@@ -93,7 +103,12 @@ public class ClientController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String trainerId
     ) {
-        List<ClientResponse> response = coreClientService.searchClients(keyword, trainerId);
+        String currentUserId = getCurrentUserId();
+        boolean isManagement = isManagementUser();
+        // Nếu là PT thường thì bắt buộc lọc theo currentUserId
+        String effectiveTrainerId = isManagement ? trainerId : currentUserId;
+
+        List<ClientResponse> response = coreClientService.searchClients(keyword, effectiveTrainerId);
         return ApiResponse.ok(
                 "CLIENT.SEARCH_SUCCESS",
                 "Tìm kiếm khách hàng thành công",
@@ -106,11 +121,19 @@ public class ClientController {
             @RequestParam(required = false) String trainerId,
             @RequestParam(required = false) String search
     ) {
+        String currentUserId = getCurrentUserId();
+        boolean isManagement = isManagementUser();
+
+        // 💡 BẢO VỆ DỮ LIỆU: Nếu là PT thì BẮT BUỘC lấy khách hàng theo ID của chính PT đó (currentUserId),
+        // tránh trường hợp account PT này xem được khách hàng của PT khác.
+        // Chỉ ADMIN / Quản lý mới được truyền trainerId khác hoặc lấy tất cả (null).
+        String effectiveTrainerId = isManagement ? trainerId : currentUserId;
+
         List<ClientResponse> response;
         if (search != null && !search.isBlank()) {
-            response = coreClientService.searchClients(search, trainerId);
+            response = coreClientService.searchClients(search, effectiveTrainerId);
         } else {
-            response = coreClientService.getAllClients(trainerId);
+            response = coreClientService.getAllClients(effectiveTrainerId);
         }
         return ApiResponse.ok(
                 "CLIENT.GET_ALL_SUCCESS",
@@ -124,6 +147,17 @@ public class ClientController {
             @PathVariable String id,
             @Valid @RequestBody UpdateClientRequest request
     ) {
+        String currentUserId = getCurrentUserId();
+        boolean isManagement = isManagementUser();
+
+        if (!isManagement) {
+            ClientResponse existing = coreClientService.getClientById(id);
+            if (existing.getAssignedTrainerId() == null || !existing.getAssignedTrainerId().equals(currentUserId)) {
+                throw new BusinessException(ClientError.ACCESS_DENIED);
+            }
+            request.setAssignedTrainerId(currentUserId);
+        }
+
         ClientResponse response = coreClientService.updateClient(id, request);
         return ApiResponse.ok(
                 "CLIENT.UPDATE_SUCCESS",
@@ -134,6 +168,16 @@ public class ClientController {
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteClient(@PathVariable String id) {
+        String currentUserId = getCurrentUserId();
+        boolean isManagement = isManagementUser();
+
+        if (!isManagement) {
+            ClientResponse existing = coreClientService.getClientById(id);
+            if (existing.getAssignedTrainerId() == null || !existing.getAssignedTrainerId().equals(currentUserId)) {
+                throw new BusinessException(ClientError.ACCESS_DENIED);
+            }
+        }
+
         coreClientService.deleteClient(id);
         return ApiResponse.ok(
                 "CLIENT.DELETE_SUCCESS",
@@ -153,5 +197,19 @@ public class ClientController {
         }
 
         return authentication.getPrincipal().toString();
+    }
+
+    private boolean isManagementUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getAuthorities() == null) {
+            return false;
+        }
+
+        for (GrantedAuthority authority : authentication.getAuthorities()) {
+            if (MANAGEMENT_ROLES.contains(authority.getAuthority())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
